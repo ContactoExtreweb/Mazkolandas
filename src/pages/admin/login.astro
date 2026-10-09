@@ -1,0 +1,77 @@
+---
+import Admin from '../../layouts/Admin.astro'
+import Logo from '../../components/Logo.astro'
+---
+
+<Admin title="Entrar" login>
+  <form class="acceso" id="acceso">
+    <div class="acceso__marca"><Logo /></div>
+    <h1>Panel del cuaderno</h1>
+    <p class="ayuda">Entra para escribir y publicar entradas.</p>
+    <label class="campo">
+      <span>Email</span>
+      <input type="email" id="email" required autocomplete="username" />
+    </label>
+    <label class="campo">
+      <span>Contraseña</span>
+      <input type="password" id="clave" required autocomplete="current-password" />
+    </label>
+    <p class="aviso aviso--error" id="error" hidden></p>
+    <button class="boton" type="submit" id="entrar">Entrar</button>
+  </form>
+
+  <style>
+    .acceso {
+      max-width: 24rem;
+      margin: 8vh auto 0;
+    }
+    .acceso__marca {
+      width: 88px;
+      height: 88px;
+      color: var(--verde);
+      margin-bottom: 2rem;
+    }
+    .acceso h1 {
+      margin-bottom: 0.5rem;
+    }
+    .acceso .ayuda {
+      margin-bottom: 2rem;
+    }
+    .acceso .boton {
+      width: 100%;
+      justify-content: center;
+    }
+  </style>
+
+  <script>
+    import { supabase } from '../../lib/supabaseBrowser.js'
+
+    const form = document.getElementById('acceso') as HTMLFormElement
+    const boton = document.getElementById('entrar') as HTMLButtonElement
+    const error = document.getElementById('error') as HTMLElement
+
+    supabase?.auth.getSession().then(({ data }) => {
+      if (data.session) location.href = '/admin/'
+    })
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      if (!supabase) return
+      error.hidden = true
+      boton.disabled = true
+      boton.textContent = 'Entrando…'
+      const { error: fallo } = await supabase.auth.signInWithPassword({
+        email: (document.getElementById('email') as HTMLInputElement).value.trim(),
+        password: (document.getElementById('clave') as HTMLInputElement).value,
+      })
+      if (fallo) {
+        error.textContent = 'Email o contraseña incorrectos. Revisa los dos y vuelve a probar.'
+        error.hidden = false
+        boton.disabled = false
+        boton.textContent = 'Entrar'
+      } else {
+        location.href = '/admin/'
+      }
+    })
+  </script>
+</Admin>

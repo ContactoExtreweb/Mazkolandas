@@ -1,0 +1,99 @@
+---
+// Índice de entradas del cuaderno: foto montada (si la hay), datos en
+// cursiva, título y resumen.
+import { T, RUTAS, FASES } from '../i18n.js'
+import { fecha } from '../lib/texto.js'
+
+interface Props {
+  posts: any[]
+  lang: 'es' | 'eu'
+}
+const { posts, lang } = Astro.props
+const t = T[lang]
+---
+
+<ol class="indice">
+  {posts.map((p) => (
+    <li>
+      <a href={`${RUTAS[lang].cuaderno}${p.slug}`}>
+        {p.fotos[0] && (
+          <span class="indice__foto">
+            <img src={p.fotos[0].url} alt="" loading="lazy" width="320" height="240" />
+          </span>
+        )}
+        <span class="indice__texto">
+          <span class="indice__titulo">{p.titulo}</span>
+          <span class="indice__meta">
+            <span>{t.entrada} nº {p.numero}</span>
+            <time datetime={p.fecha}>{fecha(p.fecha)}</time>
+            {p.fase && <span class="indice__fase">{FASES[lang][p.fase]}</span>}
+            {p.autor && <span>{`${t.firma} ${p.autor}`}</span>}
+          </span>
+          {p.extracto && <span class="indice__extracto">{p.extracto}</span>}
+        </span>
+      </a>
+    </li>
+  ))}
+</ol>
+
+<style>
+  .indice {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--tinta);
+  }
+  .indice li {
+    border-bottom: 1px solid var(--filete);
+  }
+  /* Columna de foto siempre reservada: los títulos quedan alineados haya foto o no */
+  .indice a {
+    display: grid;
+    grid-template-columns: clamp(5.5rem, 18vw, 13rem) 1fr;
+    gap: 1rem clamp(1rem, 3vw, 2.5rem);
+    padding: 1.6rem 0;
+    text-decoration: none;
+  }
+  .indice__foto {
+    background: var(--paspartu);
+    padding: 0.5rem;
+    align-self: start;
+  }
+  .indice__foto img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    background: var(--filete);
+  }
+  .indice__texto {
+    grid-column: 2;
+    display: grid;
+    gap: 0.4rem;
+    align-content: start;
+  }
+  .indice__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem 1rem;
+    font-style: italic;
+    font-size: 0.9375rem;
+    color: var(--tinta-2);
+  }
+  .indice__fase {
+    color: var(--mosto);
+  }
+  .indice__titulo {
+    font-family: var(--titular);
+    font-size: clamp(1.4rem, 1.2vw + 1rem, 2rem);
+    line-height: 1.15;
+    text-wrap: balance;
+    transition: color 0.15s;
+  }
+  .indice a:hover .indice__titulo {
+    color: var(--mosto);
+  }
+  .indice__extracto {
+    color: var(--tinta-2);
+    max-width: 60ch;
+  }
+</style>

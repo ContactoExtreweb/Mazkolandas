@@ -1,0 +1,254 @@
+---
+// Layout del panel. Mismas tintas y letra que la web, pero controles normales:
+// aquí se viene a trabajar, no a mirar.
+import '@fontsource/libre-caslon-display/400.css'
+import '@fontsource/libre-caslon-text/400.css'
+import '@fontsource/libre-caslon-text/400-italic.css'
+import '@fontsource/libre-caslon-text/700.css'
+import '@fontsource/courier-prime/400.css'
+import '../styles/global.css'
+
+interface Props {
+  title: string
+  login?: boolean
+}
+const { title, login = false } = Astro.props
+const ruta = Astro.url.pathname
+const seccion = ruta.startsWith('/admin/vino') ? 'vino' : ruta.startsWith('/admin/mensajes') ? 'mensajes' : 'entradas'
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>{title} · Panel Mazkolandas</title>
+  </head>
+  <body class="panel">
+    {!login && (
+      <header class="verde panel__barra">
+        <a class="panel__marca" href="/admin/">Mazkolandas <span>· panel</span></a>
+        <nav class="panel__secciones" aria-label="Panel">
+          <a href="/admin/" aria-current={seccion === 'entradas' ? 'page' : undefined}>Entradas</a>
+          <a href="/admin/vino/" aria-current={seccion === 'vino' ? 'page' : undefined}>Nuestro vino</a>
+          <a href="/admin/mensajes/" aria-current={seccion === 'mensajes' ? 'page' : undefined}>Mensajes</a>
+        </nav>
+        <nav class="nota">
+          <a href="/" target="_blank" rel="noopener">Ver la web</a>
+          <button type="button" class="panel__salir" id="salir">Salir</button>
+        </nav>
+      </header>
+    )}
+    <main class="panel__hoja">
+      <slot />
+    </main>
+
+    <script>
+      import { supabase } from '../lib/supabaseBrowser.js'
+
+      const enLogin = location.pathname.startsWith('/admin/login')
+      if (!supabase) {
+        document.querySelector('.panel__hoja')!.insertAdjacentHTML(
+          'afterbegin',
+          '<p class="aviso aviso--error">Falta configurar Supabase: crea el archivo .env con PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY.</p>',
+        )
+      } else if (!enLogin) {
+        supabase.auth.getSession().then(({ data }) => {
+          if (!data.session) location.href = '/admin/login/'
+        })
+        document.getElementById('salir')?.addEventListener('click', async () => {
+          await supabase.auth.signOut()
+          location.href = '/admin/login/'
+        })
+      }
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  .panel {
+    min-height: 100vh;
+  }
+  .panel__barra {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem 1.5rem;
+    padding: 1rem var(--margen);
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+  .panel__marca {
+    font-family: var(--titular);
+    font-size: 1.25rem;
+    text-decoration: none;
+  }
+  .panel__marca span {
+    font-family: var(--texto);
+    font-style: italic;
+    color: var(--sobre-verde-2);
+  }
+  .panel__secciones {
+    display: flex;
+    gap: 1.5rem;
+    margin-right: auto;
+    margin-left: 1rem;
+  }
+  .panel__secciones a {
+    text-decoration: none;
+    padding-block: 0.3rem;
+    border-bottom: 1px solid transparent;
+  }
+  .panel__secciones a[aria-current='page'],
+  .panel__secciones a:hover {
+    border-bottom-color: var(--oro);
+  }
+  .panel__barra nav {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+  }
+  .panel__salir {
+    font: inherit;
+    background: none;
+    border: 0;
+    padding: 0.35rem 0;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 0.22em;
+    color: inherit;
+  }
+  .panel__salir:hover {
+    color: var(--paspartu);
+  }
+  .panel__hoja {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: 2rem var(--margen) 5rem;
+  }
+  .panel h1 {
+    font-size: clamp(1.6rem, 2vw + 1rem, 2.2rem);
+  }
+
+  /* Formularios */
+  .campo {
+    display: grid;
+    gap: 0.4rem;
+    margin-bottom: 1.4rem;
+  }
+  .campo > span:first-child,
+  .campo legend {
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .campo small,
+  .ayuda {
+    color: var(--tinta-2);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  .panel input[type='text'],
+  .panel input[type='email'],
+  .panel input[type='url'],
+  .panel input[type='password'],
+  .panel input[type='date'],
+  .panel select,
+  .panel textarea {
+    font: inherit;
+    font-size: 1rem;
+    color: var(--tinta);
+    background: #fff;
+    border: 1px solid var(--tinta-2);
+    border-radius: 0;
+    padding: 0.7rem 0.8rem;
+    width: 100%;
+  }
+  .panel textarea {
+    min-height: 16rem;
+    resize: vertical;
+    line-height: 1.6;
+  }
+  .panel input:focus,
+  .panel select:focus,
+  .panel textarea:focus {
+    outline: 2px solid var(--mosto);
+    outline-offset: 0;
+    border-color: var(--mosto);
+  }
+  .panel input::placeholder,
+  .panel textarea::placeholder {
+    color: #6e6b66;
+  }
+  .panel input[type='checkbox'] {
+    width: 1.25rem;
+    height: 1.25rem;
+    accent-color: var(--mosto);
+  }
+  .boton:disabled {
+    opacity: 0.55;
+    cursor: progress;
+  }
+  .boton-texto {
+    font-family: var(--texto);
+    font-size: 0.875rem;
+    background: none;
+    border: 1px solid var(--tinta-2);
+    padding: 0.45rem 0.7rem;
+    cursor: pointer;
+    color: var(--tinta);
+  }
+  .boton-texto:hover {
+    border-color: var(--mosto);
+    color: var(--mosto);
+  }
+  .boton-texto--peligro:hover {
+    border-color: #a3141c;
+    color: #a3141c;
+  }
+
+  /* Desplegables del panel: marcador dibujado (+ / −), no el triángulo del navegador */
+  .panel summary {
+    list-style: none;
+    position: relative;
+    padding-right: 2rem;
+  }
+  .panel summary::-webkit-details-marker {
+    display: none;
+  }
+  .panel summary::before,
+  .panel summary::after {
+    content: '';
+    position: absolute;
+    right: 0.25rem;
+    top: 0.75em;
+    width: 0.8rem;
+    height: 1px;
+    background: var(--mosto);
+    transition: transform 0.25s var(--ease);
+  }
+  .panel summary::after {
+    transform: rotate(90deg);
+  }
+  .panel details[open] > summary::after {
+    transform: rotate(0deg);
+  }
+  .aviso {
+    font-family: var(--texto);
+    font-size: 0.95rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid currentColor;
+    margin: 0 0 1.5rem;
+  }
+  .aviso--ok {
+    color: var(--mosto);
+    background: color-mix(in srgb, var(--mosto) 7%, var(--paspartu));
+  }
+  .aviso--error {
+    color: #a3141c;
+    background: #fbeeee;
+  }
+</style>

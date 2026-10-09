@@ -1,0 +1,79 @@
+---
+// Libro de registro: lista de espera del primer vino (→ /api/suscribir → tabla suscriptores).
+import { T } from '../i18n.js'
+
+interface Props {
+  lang: 'es' | 'eu'
+}
+const { lang } = Astro.props
+const t = T[lang].suscripcion
+const f = T[lang].formulario
+---
+
+<section class="suscripcion marco" id="registro">
+  <div class="suscripcion__tarjeta">
+    <div class="suscripcion__textos">
+      <h2 class="suscripcion__titulo">{t.titulo}</h2>
+      <p>{t.texto}</p>
+    </div>
+    <form
+      class="formulario"
+      id="formulario"
+      action="/api/suscribir"
+      method="POST"
+      data-envio
+      data-enviando={f.enviando}
+      data-ok={t.ok}
+      data-error={f.error}
+    >
+      <label>
+        {t.label}
+        <input type="email" name="email" placeholder={t.placeholder} required autocomplete="email" maxlength="200" />
+      </label>
+      <label class="formulario__acepto">
+        <input type="checkbox" name="acepto" value="1" required />
+        <span>{t.acepto} <a href="/privacidad/">{f.privacidad}</a>.</span>
+      </label>
+      <div class="trampa" aria-hidden="true">
+        <label>Empresa <input type="text" name="empresa" tabindex="-1" autocomplete="off" /></label>
+      </div>
+      <input type="hidden" name="ts" value={Date.now()} />
+      <input type="hidden" name="idioma" value={lang} />
+      <button type="submit" class="boton">{t.boton}</button>
+      <p class="formulario__estado" role="status"></p>
+    </form>
+  </div>
+</section>
+
+<script>
+  import { prepararFormularios } from '../lib/enviarFormulario.js'
+  document.addEventListener('astro:page-load', prepararFormularios)
+</script>
+
+<style>
+  .suscripcion {
+    padding-block: calc(var(--linea) * 4);
+  }
+  .suscripcion__tarjeta {
+    background: var(--paspartu);
+    border: 1px solid var(--filete);
+    padding: clamp(1.75rem, 5vw, 4rem);
+    display: grid;
+    gap: 2rem 4rem;
+    align-items: center;
+  }
+  @media (min-width: 800px) {
+    .suscripcion__tarjeta {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .suscripcion__titulo {
+    font-size: clamp(1.9rem, 2.4vw + 1rem, 3rem);
+    margin-bottom: 0.8rem;
+  }
+  .suscripcion__textos p {
+    font-size: 1.125rem;
+    margin: 0;
+    max-width: 40ch;
+  }
+</style>

@@ -1,0 +1,373 @@
+---
+// Alta y edición de una entrada (?id=… para editar). Todo ocurre en el
+// navegador con la sesión del panel; las políticas RLS hacen de portero.
+import Admin from '../../layouts/Admin.astro'
+---
+
+<Admin title="Entrada">
+  <h1 id="titulo-pagina">Nueva entrada</h1>
+  <p class="aviso" id="estado" hidden></p>
+
+  <form id="form" novalidate>
+    <label class="campo">
+      <span>Título</span>
+      <input type="text" name="titulo" required maxlength="140" placeholder="Así fue la vendimia en Cirauqui" />
+    </label>
+
+    <label class="campo">
+      <span>Dirección de la entrada</span>
+      <input type="text" name="slug" required maxlength="80" pattern="[a-z0-9]+(-[a-z0-9]+)*" />
+      <small>mazkolandas.es/cuaderno/<strong id="slug-vista">…</strong> · Se rellena sola con el título. Si la entrada ya está publicada, mejor no cambiarla.</small>
+    </label>
+
+    <label class="campo">
+      <span>Resumen</span>
+      <textarea name="extracto" rows="2" maxlength="300" style="min-height:5rem" placeholder="Una o dos frases. Es lo que sale en Google y en el listado."></textarea>
+    </label>
+
+    <label class="campo">
+      <span>Texto</span>
+      <textarea name="contenido" rows="14"></textarea>
+      <small>Deja una línea en blanco entre párrafos. <code>## Subtítulo</code> para un subtítulo · <code>- </code> al principio de la línea para una lista · <code>**así**</code> para negrita · <code>[texto](https://enlace)</code> para un enlace.</small>
+    </label>
+
+    <fieldset class="campo fotos">
+      <legend>Fotos</legend>
+      <small>La primera es la portada. Se reducen solas antes de subirse (JPEG, 1600 px).</small>
+      <ol id="fotos"></ol>
+      <label class="boton-texto subir">
+        Añadir fotos
+        <input type="file" id="archivos" accept="image/jpeg,image/png,image/webp" multiple hidden />
+      </label>
+    </fieldset>
+
+    <div class="dos">
+      <label class="campo">
+        <span>Firma</span>
+        <select name="autor">
+          <option value="">Sin firma</option>
+          <option>Nerea</option>
+          <option>Julen</option>
+          <option>Iñaki</option>
+        </select>
+      </label>
+      <label class="campo">
+        <span>Momento de la viña</span>
+        <select name="fase">
+          <option value="">Ninguno</option>
+          <option value="poda">Poda</option>
+          <option value="brotacion">Brotación</option>
+          <option value="floracion">Floración</option>
+          <option value="envero">Envero</option>
+          <option value="vendimia">Vendimia</option>
+          <option value="bodega">Bodega</option>
+        </select>
+      </label>
+      <label class="campo">
+        <span>Fecha</span>
+        <input type="date" name="fecha" required />
+      </label>
+    </div>
+
+    <details class="euskera">
+      <summary>Euskaraz (opcional)</summary>
+      <p class="ayuda">Si no pones título en euskera, la entrada solo sale en la web en castellano.</p>
+      <label class="campo">
+        <span>Izenburua</span>
+        <input type="text" name="titulo_eu" maxlength="140" />
+      </label>
+      <label class="campo">
+        <span>Laburpena</span>
+        <textarea name="extracto_eu" rows="2" maxlength="300" style="min-height:5rem"></textarea>
+      </label>
+      <label class="campo">
+        <span>Testua</span>
+        <textarea name="contenido_eu" rows="12"></textarea>
+      </label>
+    </details>
+
+    <label class="publicar">
+      <input type="checkbox" name="publicado" />
+      <span>Publicar en la web <small>(si no, se guarda como borrador)</small></span>
+    </label>
+
+    <div class="botones">
+      <button class="boton" type="submit" id="guardar">Guardar</button>
+      <a class="boton-texto" href="/admin/">Volver al listado</a>
+      <a class="boton-texto" id="ver" href="#" target="_blank" rel="noopener" hidden>Ver en la web</a>
+    </div>
+  </form>
+
+  <style>
+    #form {
+      margin-top: 2rem;
+    }
+    fieldset {
+      border: 0;
+      padding: 0;
+      margin: 0 0 1.4rem;
+      min-width: 0;
+    }
+    .dos {
+      display: grid;
+      gap: 0 1.25rem;
+    }
+    @media (min-width: 700px) {
+      .dos {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    .fotos ol {
+      list-style: none;
+      margin: 0.5rem 0;
+      padding: 0;
+      display: grid;
+      gap: 0.75rem;
+    }
+    .fotos :global(li) {
+      display: grid;
+      grid-template-columns: 6rem 1fr;
+      gap: 0.5rem 1rem;
+      align-items: start;
+      padding: 0.75rem;
+      background: #fff;
+      border: 1px solid var(--filete);
+    }
+    .fotos :global(li img) {
+      width: 6rem;
+      height: 4.5rem;
+      object-fit: cover;
+      grid-row: span 2;
+    }
+    .fotos :global(.mover) {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      align-items: center;
+    }
+    .fotos :global(.portada) {
+      font-family: var(--texto);
+      font-size: 0.8rem;
+      color: var(--mosto);
+      font-style: italic;
+      margin-right: auto;
+    }
+    .subir {
+      justify-self: start;
+      display: inline-block;
+    }
+    .subir:focus-within {
+      outline: 2px dashed var(--mosto);
+      outline-offset: 3px;
+    }
+    .euskera {
+      border: 1px solid var(--tinta);
+      padding: 1rem 1.25rem 0.25rem;
+      margin-bottom: 1.5rem;
+      background: #fff;
+    }
+    .euskera summary {
+      font-family: var(--texto);
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 1rem;
+    }
+    .publicar {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      font-family: var(--texto);
+      font-weight: 700;
+      margin-bottom: 2rem;
+      cursor: pointer;
+    }
+    .publicar small {
+      font-weight: 400;
+      color: var(--tinta-2);
+    }
+    .botones {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--tinta);
+    }
+    .botones a {
+      text-decoration: none;
+    }
+  </style>
+
+  <script>
+    import { supabase } from '../../lib/supabaseBrowser.js'
+    import { refrescarWeb } from '../../lib/refrescarWeb.js'
+    import { slugify } from '../../lib/texto.js'
+    import { comprimir, rutaEnBucket as rutaFoto } from '../../lib/imagen.js'
+
+    type Foto = { url: string; pie: string }
+
+    const form = document.getElementById('form') as HTMLFormElement
+    const campo = (n: string) => form.elements.namedItem(n) as HTMLInputElement
+    const estado = document.getElementById('estado')!
+    const guardar = document.getElementById('guardar') as HTMLButtonElement
+    const listaFotos = document.getElementById('fotos')!
+    const ver = document.getElementById('ver') as HTMLAnchorElement
+
+    let id = new URLSearchParams(location.search).get('id')
+    let fotos: Foto[] = []
+    let quitadas: string[] = [] // se borran del Storage después de guardar
+    let slugTocado = false
+
+    const avisar = (m: string, tipo: 'ok' | 'error') => {
+      estado.textContent = m
+      estado.className = `aviso aviso--${tipo}`
+      estado.hidden = false
+      estado.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    }
+    const esc = (s: string) => s.replace(/[&<>"]/g, (c) => `&${{ '&': 'amp', '<': 'lt', '>': 'gt', '"': 'quot' }[c]};`)
+
+    // ── Dirección (slug) automática a partir del título ──
+    const vistaSlug = () => (document.getElementById('slug-vista')!.textContent = campo('slug').value || '…')
+    campo('titulo').addEventListener('input', () => {
+      if (!slugTocado) campo('slug').value = slugify(campo('titulo').value)
+      vistaSlug()
+    })
+    campo('slug').addEventListener('input', () => {
+      slugTocado = true
+      vistaSlug()
+    })
+
+    // ── Fotos ──
+    function pintarFotos() {
+      listaFotos.innerHTML = fotos
+        .map(
+          (f, i) => `<li>
+            <img src="${esc(f.url)}" alt="" />
+            <div class="mover">
+              ${i === 0 ? '<span class="portada">Portada</span>' : '<span class="portada"></span>'}
+              <button type="button" class="boton-texto" data-accion="subir" data-i="${i}" ${i === 0 ? 'disabled' : ''}>Subir</button>
+              <button type="button" class="boton-texto" data-accion="bajar" data-i="${i}" ${i === fotos.length - 1 ? 'disabled' : ''}>Bajar</button>
+              <button type="button" class="boton-texto boton-texto--peligro" data-accion="quitar" data-i="${i}">Quitar</button>
+            </div>
+            <input type="text" data-pie="${i}" value="${esc(f.pie)}" placeholder="Pie de foto: qué se ve, dónde y cuándo" aria-label="Pie de la foto ${i + 1}" />
+          </li>`,
+        )
+        .join('')
+    }
+    listaFotos.addEventListener('input', (e) => {
+      const t = e.target as HTMLInputElement
+      if (t.dataset.pie) fotos[+t.dataset.pie].pie = t.value
+    })
+    listaFotos.addEventListener('click', (e) => {
+      const b = (e.target as HTMLElement).closest('button')
+      if (!b) return
+      const i = +b.dataset.i!
+      if (b.dataset.accion === 'quitar') quitadas.push(...fotos.splice(i, 1).map((f) => f.url))
+      if (b.dataset.accion === 'subir') [fotos[i - 1], fotos[i]] = [fotos[i], fotos[i - 1]]
+      if (b.dataset.accion === 'bajar') [fotos[i + 1], fotos[i]] = [fotos[i], fotos[i + 1]]
+      pintarFotos()
+    })
+
+
+    const archivos = document.getElementById('archivos') as HTMLInputElement
+    // ponytail: fotos subidas y nunca guardadas quedan huérfanas en el Storage; limpiar a mano si algún día pesa
+    archivos.addEventListener('change', async () => {
+      if (!supabase || !archivos.files?.length) return
+      guardar.disabled = true
+      const lista = [...archivos.files]
+      for (const [n, file] of lista.entries()) {
+        avisar(`Subiendo foto ${n + 1} de ${lista.length}…`, 'ok')
+        try {
+          const blob = await comprimir(file)
+          const ruta = `${crypto.randomUUID()}.jpg`
+          const { error } = await supabase.storage.from('cuaderno').upload(ruta, blob, { contentType: 'image/jpeg' })
+          if (error) throw error
+          fotos.push({ url: supabase.storage.from('cuaderno').getPublicUrl(ruta).data.publicUrl, pie: '' })
+          pintarFotos()
+        } catch (e: any) {
+          avisar(`No se pudo subir «${file.name}»: ${e.message ?? e}. Prueba con un JPEG.`, 'error')
+        }
+      }
+      if (!estado.className.includes('error')) estado.hidden = true
+      archivos.value = ''
+      guardar.disabled = false
+    })
+
+    // ── Cargar una entrada existente ──
+    async function cargar() {
+      campo('fecha').value = new Date().toISOString().slice(0, 10)
+      if (!supabase || !id) return
+      document.getElementById('titulo-pagina')!.textContent = 'Editar entrada'
+      const { data, error } = await supabase.from('posts').select('*').eq('id', id).maybeSingle()
+      if (error || !data) return avisar('No se encontró la entrada.', 'error')
+      for (const n of ['titulo', 'slug', 'extracto', 'contenido', 'autor', 'fase', 'fecha', 'titulo_eu', 'extracto_eu', 'contenido_eu'])
+        campo(n).value = data[n] ?? ''
+      campo('publicado').checked = data.publicado
+      if (data.titulo_eu) (document.querySelector('.euskera') as HTMLDetailsElement).open = true
+      fotos = data.fotos ?? []
+      slugTocado = true
+      vistaSlug()
+      pintarFotos()
+      mostrarVer(data.publicado, data.slug)
+    }
+    const mostrarVer = (publicado: boolean, slug: string) => {
+      ver.hidden = !publicado
+      ver.href = `/cuaderno/${slug}`
+    }
+
+    // ── Guardar ──
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      if (!supabase) return
+      const v = (n: string) => campo(n).value.trim()
+      if (!v('titulo')) return avisar('Falta el título.', 'error'), campo('titulo').focus()
+      if (!campo('slug').checkValidity() || !v('slug'))
+        return avisar('La dirección solo puede tener minúsculas, números y guiones.', 'error'), campo('slug').focus()
+      if (!v('fecha')) return avisar('Falta la fecha.', 'error'), campo('fecha').focus()
+
+      const fila = {
+        titulo: v('titulo'),
+        slug: v('slug'),
+        extracto: v('extracto') || null,
+        contenido: v('contenido'),
+        titulo_eu: v('titulo_eu') || null,
+        extracto_eu: v('extracto_eu') || null,
+        contenido_eu: v('contenido_eu') || null,
+        autor: v('autor') || null,
+        fase: v('fase') || null,
+        fecha: v('fecha'),
+        publicado: campo('publicado').checked,
+        fotos: fotos.map((f) => ({ url: f.url, pie: f.pie.trim() })),
+      }
+
+      guardar.disabled = true
+      guardar.textContent = 'Guardando…'
+      // .select() para comprobar que se guardó de verdad (RLS no da error, guarda 0 filas)
+      const { data, error } = id
+        ? await supabase.from('posts').update(fila).eq('id', id).select('id, slug')
+        : await supabase.from('posts').insert(fila).select('id, slug')
+      guardar.disabled = false
+      guardar.textContent = 'Guardar'
+
+      if (error?.code === '23505') return avisar('Ya hay otra entrada con esa dirección. Cambia la dirección.', 'error')
+      if (error || !data?.length)
+        return avisar('No se guardó. ' + (error?.message ?? 'Tu usuario no tiene permiso (tabla admins).'), 'error')
+
+      if (!id) {
+        id = data[0].id
+        history.replaceState(null, '', `?id=${id}`)
+        document.getElementById('titulo-pagina')!.textContent = 'Editar entrada'
+      }
+      // Primero guardar, después borrar del Storage las fotos quitadas
+      const rutas = quitadas.map(rutaFoto).filter(Boolean)
+      if (rutas.length) await supabase.storage.from('cuaderno').remove(rutas)
+      quitadas = []
+
+      await refrescarWeb()
+      mostrarVer(fila.publicado, fila.slug)
+      avisar(fila.publicado ? 'Guardada y publicada. Ya se ve en la web.' : 'Guardada como borrador. No se ve en la web.', 'ok')
+    })
+
+    cargar()
+  </script>
+</Admin>

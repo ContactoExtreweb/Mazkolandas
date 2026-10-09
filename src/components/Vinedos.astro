@@ -1,0 +1,255 @@
+---
+// Página de los viñedos: la que tiene que posicionar "viñedos en Navarra".
+// Solo datos comprobados del lugar; lo de la viña (uva, hectáreas, suelo)
+// lo tienen que dar los socios.
+import Base from '../layouts/Base.astro'
+import Flecha from './Flecha.astro'
+import Lamina from './Lamina.astro'
+import { T, RUTAS, EMAIL } from '../i18n.js'
+import { aHTML } from '../lib/texto.js'
+
+interface Props {
+  lang: 'es' | 'eu'
+}
+const { lang } = Astro.props
+const t = T[lang]
+const r = RUTAS[lang]
+
+const C = {
+  es: {
+    title: 'Viñedos en Navarra: nuestra viña en Cirauqui | Mazkolandas',
+    description:
+      'Los viñedos de Mazkolandas están en Cirauqui, Navarra, en el Camino de Santiago entre Puente la Reina y Estella. Así es la tierra donde nace nuestro vino.',
+    h1: 'Viñedos en Navarra: nuestra viña en Cirauqui',
+    entrada:
+      'Nuestras cepas crecen alrededor de Cirauqui, un pueblo en lo alto de un cerro de la Merindad de Estella, entre Puente la Reina y Estella.',
+    ficha: [
+      ['Municipio', 'Cirauqui / Zirauki'],
+      ['Merindad', 'Estella'],
+      ['Pamplona', 'a unos 30 km'],
+      ['Camino de Santiago', 'lo cruza'],
+    ],
+    texto: `## Dónde está Cirauqui
+
+Cirauqui (Zirauki en euskera) está en la zona media de Navarra, a unos 30 kilómetros al suroeste de Pamplona. El pueblo se levanta sobre un cerro y el Camino de Santiago lo atraviesa de camino a Estella: muchos peregrinos lo recuerdan por su calzada romana y su puente.
+
+## Viña y vino en Navarra
+
+Navarra tiene una larga tradición de viña y vino. La Denominación de Origen Navarra reúne cinco subzonas (Baja Montaña, Valdizarbe, Tierra Estella, Ribera Alta y Ribera Baja), y la zona media queda a medio camino entre el clima atlántico del norte y el mediterráneo del sur.
+
+## Nuestra viña
+
+Aquí cultivamos nuestras cepas y de aquí sale nuestro primer vino, que ya está en botella. Cuando tenga etiqueta te contaremos exactamente su uva, su añada y cómo es la parcela de la que procede.
+
+## El ciclo de la vid
+
+Cuidar una viña es entender su ciclo anual: desde la poda de invierno con las cepas desnudas, pasando por el lloro, la floración en primavera, el envero en verano cuando las uvas cambian de color, hasta llegar a la vendimia en otoño. 
+
+Lo que pasa en nuestra viña, las alegrías y los retos de cada estación, lo vamos apuntando paso a paso en nuestro [cuaderno de campo](/cuaderno/).`,
+    preguntas: 'Preguntas frecuentes',
+    faq: [
+      ['¿Dónde están los viñedos de Mazkolandas?', 'En Cirauqui (Zirauki), Navarra, entre Puente la Reina y Estella.'],
+      ['¿Cuándo sale vuestro primer vino?', 'Ya está embotellado y solo le falta la etiqueta. Lo anunciaremos aquí, en el cuaderno y en Instagram.'],
+      ['¿Cómo puedo contactar con vosotros?', `Escríbenos a ${EMAIL} y te respondemos.`],
+    ],
+    cta: 'Leer el cuaderno de campo',
+  },
+  eu: {
+    title: 'Mahastiak Nafarroan: gure mahastia Ziraukin | Mazkolandas',
+    description:
+      'Mazkolandasen mahastiak Ziraukin daude, Nafarroan, Done Jakue bidean, Gares eta Lizarra artean. Hau da gure ardoa jaiotzen den lurra.',
+    h1: 'Mahastiak Nafarroan: gure mahastia Ziraukin',
+    entrada:
+      'Gure mahatsondoak Zirauki inguruan hazten dira, Lizarrako merindadeko muino baten gaineko herrian, Gares eta Lizarra artean.',
+    ficha: [
+      ['Udalerria', 'Zirauki / Cirauqui'],
+      ['Merindadea', 'Lizarra'],
+      ['Iruña', '30 km inguru'],
+      ['Done Jakue bidea', 'zeharkatzen du'],
+    ],
+    texto: `## Non dago Zirauki
+
+Zirauki (Cirauqui gaztelaniaz) Nafarroa erdialdean dago, Iruñetik 30 bat kilometrora, hego-mendebaldera. Herria muino baten gainean dago, eta Done Jakue bideak zeharkatzen du Lizarrarako bidean: erromes askok bere galtzada erromatarra eta zubia gogoratzen dituzte.
+
+## Mahastia eta ardoa Nafarroan
+
+Nafarroak mahastien eta ardoaren tradizio luzea du. Nafarroako Jatorri Deiturak bost azpieremu ditu (Baja Montaña, Valdizarbe, Tierra Estella, Ribera Alta eta Ribera Baja), eta Nafarroa erdialdea iparraldeko klima atlantikoaren eta hegoaldeko mediterraneoaren artean dago.
+
+## Gure mahastia
+
+Hemen lantzen ditugu gure mahatsondoak, eta hemendik dator gure lehen ardoa, botilan dagoeneko. Etiketa duenean, haren mahatsa, uzta eta lursaila nolakoak diren zehazki kontatuko dizugu.
+
+## Mahatsondoaren zikloa
+
+Mahasti bat zaintzea haren urteko zikloa ulertzea da: neguko inausketa (mahatsondoak biluzik daudela), negarra, udaberriko loraldia, udako koloreztatzea eta, azkenik, udazkeneko mahats-bilketa.
+
+Gure mahastian gertatzen dena, urtaro bakoitzeko pozak eta erronkak, pausoz pauso idazten ari gara gure [landa-koadernoan](/eu/koadernoa/).`,
+    preguntas: 'Ohiko galderak',
+    faq: [
+      ['Non daude Mazkolandasen mahastiak?', 'Ziraukin (Cirauqui), Nafarroan, Gares eta Lizarra artean.'],
+      ['Noiz aterako da zuen lehen ardoa?', 'Botilan dago jada, eta etiketa baino ez zaio falta. Hemen, koadernoan eta Instagramen iragarriko dugu.'],
+      ['Nola jar naiteke zuekin harremanetan?', `Idatz iezaguzu ${EMAIL} helbidera eta erantzungo dizugu.`],
+    ],
+    cta: 'Irakurri landa-koadernoa',
+  },
+}[lang]
+
+const tempranillo = {
+  es: {
+    alt: 'Lámina botánica de un racimo de tempranillo con sus hojas',
+    pie: 'Tempranillo. Lámina de J. Troncy para la Ampélographie de Viala y Vermorel (1901–1910).',
+  },
+  eu: {
+    alt: 'Tempranillo mahats-mordo baten irudi botanikoa, hostoekin',
+    pie: 'Tempranilloa. J. Troncyren irudia, Viala eta Vermorelen Ampélographie lanerako (1901–1910).',
+  },
+}[lang]
+---
+
+<Base title={C.title} description={C.description} lang={lang} otra={RUTAS[lang === 'es' ? 'eu' : 'es'].vinedos}>
+  <article>
+    <header class="verde vinedos__cabeza">
+      <div class="marco vinedos__cabeza-rejilla">
+        <div>
+          <h1>{C.h1}</h1>
+          <p class="vinedos__entrada">{C.entrada}</p>
+        </div>
+        <Lamina class="vinedos__lamina" src="/laminas/tempranillo.jpg" alt={tempranillo.alt} ancho={819} alto={1165} pie={tempranillo.pie} prioridad />
+      </div>
+    </header>
+
+    <div class="marco vinedos__rejilla">
+      <aside class="vinedos__ficha">
+        <dl class="ficha">
+          {C.ficha.map(([k, v]) => (
+            <>
+              <dt>{k}</dt>
+              <dd>{v}</dd>
+            </>
+          ))}
+        </dl>
+      </aside>
+
+      <div>
+        <div class="prosa" set:html={aHTML(C.texto)} />
+
+        <section class="faq">
+          <h2>{C.preguntas}</h2>
+          {C.faq.map(([p, resp]) => (
+            <details>
+              <summary>{p}</summary>
+              <p>{resp}</p>
+            </details>
+          ))}
+        </section>
+
+        <a class="boton" href={r.cuaderno}>{C.cta}<Flecha /></a>
+      </div>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .vinedos__cabeza {
+    padding-block: calc(var(--linea) * 2) calc(var(--linea) * 3);
+  }
+  .vinedos__cabeza-rejilla {
+    display: grid;
+    gap: calc(var(--linea) * 2) 5rem;
+    align-items: center;
+  }
+  @media (min-width: 900px) {
+    .vinedos__cabeza-rejilla {
+      grid-template-columns: minmax(0, 1fr) min(22rem, calc((100svh - 14rem) * 0.66));
+    }
+  }
+  @media (max-width: 899px) {
+    .vinedos__cabeza-rejilla :global(.vinedos__lamina) {
+      max-width: 17rem;
+    }
+  }
+  .vinedos__cabeza h1 {
+    font-size: clamp(2.3rem, 3.6vw + 0.8rem, 4.5rem);
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    max-width: 16ch;
+    margin-bottom: var(--linea);
+    color: var(--paspartu);
+  }
+  .vinedos__entrada {
+    font-size: 1.1875rem;
+    max-width: 44ch;
+    margin: 0;
+  }
+  .vinedos__rejilla {
+    display: grid;
+    gap: calc(var(--linea) * 2.5) 6rem;
+    padding-top: calc(var(--linea) * 3.5);
+  }
+  @media (min-width: 900px) {
+    .vinedos__rejilla {
+      grid-template-columns: minmax(15rem, 0.7fr) minmax(0, 1.6fr);
+    }
+    .vinedos__ficha {
+      position: sticky;
+      top: var(--linea);
+      align-self: start;
+    }
+  }
+  .vinedos__rejilla .prosa {
+    font-size: 1.125rem;
+  }
+  .vinedos__rejilla .prosa > :global(h2:first-child) {
+    margin-top: 0;
+  }
+  .faq {
+    margin-block: calc(var(--linea) * 3);
+    max-width: 66ch;
+  }
+  .faq h2 {
+    font-size: clamp(1.45rem, 1vw + 1.1rem, 1.85rem);
+    margin-bottom: calc(var(--linea) * 0.75);
+  }
+  .faq details {
+    border-top: 1px solid var(--filete);
+  }
+  .faq details:last-of-type {
+    border-bottom: 1px solid var(--filete);
+  }
+  .faq summary {
+    font-size: 1.125rem;
+    padding: 1rem 2.5rem 1rem 0;
+    cursor: pointer;
+    list-style: none;
+    position: relative;
+  }
+  .faq summary::-webkit-details-marker {
+    display: none;
+  }
+  /* Signo de abrir/cerrar dibujado con dos filetes */
+  .faq summary::before,
+  .faq summary::after {
+    content: '';
+    position: absolute;
+    right: 0.4rem;
+    top: 50%;
+    width: 0.85rem;
+    height: 1px;
+    background: var(--mosto);
+    transition: transform 0.25s var(--ease);
+  }
+  .faq summary::after {
+    transform: rotate(90deg);
+  }
+  .faq details[open] summary::after {
+    transform: rotate(0deg);
+  }
+  .faq summary:hover {
+    color: var(--mosto);
+  }
+  .faq details p {
+    margin: 0 0 1.1rem;
+    max-width: 60ch;
+    color: var(--tinta-2);
+  }
+</style>

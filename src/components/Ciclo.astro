@@ -1,0 +1,358 @@
+---
+// El año en la viña: rueda de los doce meses con las fases del cultivo (fechas
+// orientativas de la zona media de Navarra) y una aguja en el día de hoy.
+// La home y el cuaderno no se prerenderizan, así que "hoy" es hoy (con la hora de
+// caché del CDN).
+interface Props {
+  lang: 'es' | 'eu'
+}
+const { lang } = Astro.props
+
+const C = {
+  es: {
+    meses: ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'],
+    hoy: 'Hoy',
+    ahora: 'Ahora en la viña',
+    proxima: 'Lo siguiente en la viña',
+    marca: 'ahora',
+    fases: {
+      poda: ['La poda', 'De diciembre a febrero', 'El trabajo de invierno en la viña desnuda: cada cepa se deja lista para la nueva añada.'],
+      brotacion: ['La brotación', 'Abril', 'Las yemas se abren y salen las primeras hojas.'],
+      floracion: ['La floración', 'Mayo y junio', 'Florecen los racimos; de cada flor que cuaja saldrá una uva.'],
+      envero: ['El envero', 'Julio y agosto', 'La uva cambia de color y empieza a madurar.'],
+      vendimia: ['La vendimia', 'Septiembre y octubre', 'El momento de recoger la uva.'],
+    },
+  },
+  eu: {
+    meses: ['urt', 'ots', 'mar', 'api', 'mai', 'eka', 'uzt', 'abu', 'ira', 'urr', 'aza', 'abe'],
+    hoy: 'Gaur',
+    ahora: 'Orain mahastian',
+    proxima: 'Hurrengoa mahastian',
+    marca: 'orain',
+    fases: {
+      poda: ['Inausketa', 'Abendutik otsailera', 'Neguko lana mahasti biluzian: mahatsondo bakoitza uzta berrirako prestatzen da.'],
+      brotacion: ['Kimatzea', 'Apirila', 'Begiak irekitzen dira eta lehen hostoak ateratzen dira.'],
+      floracion: ['Loraldia', 'Maiatza eta ekaina', 'Mordoak loratzen dira; gatzatzen den lore bakoitzetik ale bat aterako da.'],
+      envero: ['Koloreztatzea', 'Uztaila eta abuztua', 'Mahatsak kolorea aldatzen du eta heltzen hasten da.'],
+      vendimia: ['Mahats-bilketa', 'Iraila eta urria', 'Mahatsa biltzeko unea.'],
+    },
+  },
+}[lang]
+
+// Meses en decimal desde el 1 de enero (0) — la poda cruza el año (11 → 14 = fin de febrero)
+const FASES = [
+  { id: 'poda', desde: 11, hasta: 14 },
+  { id: 'brotacion', desde: 3, hasta: 4.4 },
+  { id: 'floracion', desde: 4.4, hasta: 6 },
+  { id: 'envero', desde: 6.5, hasta: 8 },
+  { id: 'vendimia', desde: 8, hasta: 10 },
+] as const
+
+const ahora = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Madrid' }))
+const dia = ahora.getDate()
+const mes = ahora.getMonth()
+const diasMes = new Date(ahora.getFullYear(), mes + 1, 0).getDate()
+const hoy = mes + (dia - 0.5) / diasMes
+const dentro = (f: (typeof FASES)[number], m: number) => (m >= f.desde && m < f.hasta) || (m + 12 >= f.desde && m + 12 < f.hasta)
+const actual = FASES.find((f) => dentro(f, hoy))
+// Entre fases: la siguiente que empieza
+const siguiente = actual ?? [...FASES].sort((a, b) => ((a.desde - hoy + 12) % 12) - ((b.desde - hoy + 12) % 12))[0]
+const fecha =
+  lang === 'eu'
+    ? `${['urtarrilaren', 'otsailaren', 'martxoaren', 'apirilaren', 'maiatzaren', 'ekainaren', 'uztailaren', 'abuztuaren', 'irailaren', 'urriaren', 'azaroaren', 'abenduaren'][mes]} ${dia}${[11, 31].includes(dia) ? '' : 'a'}`
+    : `${dia} de ${['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'][mes]}`
+
+// Geometría de la rueda (centro en 0,0; enero arriba, sentido del reloj)
+const ang = (m: number) => (m / 12) * Math.PI * 2 - Math.PI / 2
+const pt = (r: number, m: number) => [r * Math.cos(ang(m)), r * Math.sin(ang(m))].map((v) => Math.round(v * 10) / 10)
+const arco = (r: number, a: number, b: number) => {
+  const [x0, y0] = pt(r, a)
+  const [x1, y1] = pt(r, b)
+  return b > a
+    ? `M ${x0} ${y0} A ${r} ${r} 0 ${b - a > 6 ? 1 : 0} 1 ${x1} ${y1}`
+    : `M ${x0} ${y0} A ${r} ${r} 0 ${a - b > 6 ? 1 : 0} 0 ${x1} ${y1}`
+}
+const R = 196 // radio de la banda de fases
+const bandas = FASES.map((f, i) => {
+  const medio = (f.desde + f.hasta) / 2
+  const abajo = medio % 12 > 3 && medio % 12 < 9 // en la mitad de abajo el texto va al revés del reloj
+  return {
+    ...f,
+    i,
+    nombre: C.fases[f.id][0],
+    d: arco(R, f.desde + 0.05, f.hasta - 0.05),
+    texto: abajo ? arco(R, f.hasta - 0.05, f.desde + 0.05) : arco(R, f.desde + 0.05, f.hasta - 0.05),
+  }
+})
+// La aguja cruza los aros por fuera y por dentro de la banda, sin tapar el nombre de la fase
+const aguja = [[156, 174], [218, 252]].map(([a, b]) => [...pt(a, hoy), ...pt(b, hoy)])
+const [ax, ay] = pt(238, hoy)
+---
+
+<div class="ciclo" data-revelar>
+  <div class="ciclo__rueda">
+    <svg viewBox="-300 -300 600 600" aria-hidden="true">
+      <circle class="ciclo__aro" r="238" />
+      <circle class="ciclo__aro ciclo__aro--fino" r="156" />
+      {Array.from({ length: 12 }, (_, m) => {
+        const [x0, y0] = pt(232, m)
+        const [x1, y1] = pt(244, m)
+        const [tx, ty] = pt(266, m + 0.5)
+        return (
+          <>
+            <line class="ciclo__marca" x1={x0} y1={y0} x2={x1} y2={y1} />
+            <text class:list={['ciclo__mes', { 'ciclo__mes--hoy': m === mes }]} x={tx} y={ty}>{C.meses[m]}</text>
+          </>
+        )
+      })}
+      {bandas.map((b) => (
+        <g class="ciclo__fase" data-fase={b.id} style={`--i:${b.i}`}>
+          <path class="ciclo__banda" d={b.d} pathLength="1" />
+          <path id={`ciclo-${lang}-${b.id}`} d={b.texto} fill="none" />
+          <text class="ciclo__nombre">
+            <textPath href={`#ciclo-${lang}-${b.id}`} startOffset="50%" text-anchor="middle">{b.nombre}</textPath>
+          </text>
+        </g>
+      ))}
+      <g class="ciclo__aguja">
+        {aguja.map(([x1, y1, x2, y2]) => <line x1={x1} y1={y1} x2={x2} y2={y2} pathLength="1" />)}
+        <circle class="ciclo__punto" cx={ax} cy={ay} r="7" />
+      </g>
+    </svg>
+    <p class="ciclo__centro">
+      <span class="ciclo__hoy">{C.hoy}, {fecha}</span>
+      <span class="ciclo__que">{actual ? C.ahora : C.proxima}</span>
+      <span class="ciclo__fase-actual">{C.fases[siguiente.id][0]}</span>
+    </p>
+  </div>
+
+  <ol class="ciclo__lista">
+    {FASES.map((f) => (
+      <li data-fase={f.id} class:list={{ 'es-ahora': actual?.id === f.id }}>
+        <h3>
+          {C.fases[f.id][0]}
+          {actual?.id === f.id && <span class="ciclo__ahora">{C.marca}</span>}
+        </h3>
+        <p class="ciclo__cuando">{C.fases[f.id][1]}</p>
+        <p>{C.fases[f.id][2]}</p>
+      </li>
+    ))}
+  </ol>
+</div>
+
+<style>
+  .ciclo {
+    display: grid;
+    gap: calc(var(--linea) * 2) 5rem;
+    align-items: center;
+  }
+  @media (min-width: 900px) {
+    .ciclo {
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    }
+  }
+  .ciclo__rueda {
+    position: relative;
+    max-width: 36rem;
+    width: 100%;
+    justify-self: center;
+  }
+  .ciclo__rueda svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .ciclo__aro {
+    fill: none;
+    stroke: var(--tinta);
+    stroke-width: 1;
+  }
+  .ciclo__aro--fino {
+    stroke: var(--filete);
+  }
+  .ciclo__marca {
+    stroke: var(--tinta);
+    stroke-width: 1;
+  }
+  .ciclo__mes {
+    font-family: var(--texto);
+    font-style: italic;
+    font-size: 17px;
+    fill: var(--tinta-2);
+    text-anchor: middle;
+    dominant-baseline: central;
+  }
+  .ciclo__mes--hoy {
+    fill: var(--mosto);
+    font-style: normal;
+    font-weight: 700;
+  }
+
+  /* Bandas de las fases: el color cuenta la estación (madera, hoja, flor, envero, mosto) */
+  .ciclo__banda {
+    fill: none;
+    stroke-width: 44;
+    stroke: var(--c);
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: opacity 0.3s;
+  }
+  [data-fase='poda'] { --c: #6f6656; }
+  [data-fase='brotacion'] { --c: #6e8a45; }
+  [data-fase='floracion'] { --c: var(--oro); }
+  [data-fase='envero'] { --c: #7c4a5a; }
+  [data-fase='vendimia'] { --c: var(--mosto); }
+  .ciclo__nombre {
+    font-family: var(--texto);
+    font-style: italic;
+    font-size: 16px;
+    fill: var(--paspartu);
+    dominant-baseline: central;
+    opacity: 0;
+  }
+  /* Móvil: la rueda se ve a ~60 %, así que la letra crece */
+  @media (max-width: 600px) {
+    .ciclo__mes {
+      font-size: 25px;
+    }
+    .ciclo__nombre {
+      font-size: 21px;
+    }
+  }
+
+  .ciclo__aguja line {
+    stroke: var(--tinta);
+    stroke-width: 1.5;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+  .ciclo__punto {
+    fill: var(--paspartu);
+    stroke: var(--tinta);
+    stroke-width: 2;
+    opacity: 0;
+  }
+
+  /* Al pasar por una fase de la lista, se apagan las demás en la rueda */
+  .ciclo:has(.ciclo__lista li:is(:hover, :focus-visible)) .ciclo__fase {
+    opacity: 0.25;
+  }
+  .ciclo:has(li[data-fase='poda']:is(:hover, :focus-visible)) .ciclo__fase[data-fase='poda'],
+  .ciclo:has(li[data-fase='brotacion']:is(:hover, :focus-visible)) .ciclo__fase[data-fase='brotacion'],
+  .ciclo:has(li[data-fase='floracion']:is(:hover, :focus-visible)) .ciclo__fase[data-fase='floracion'],
+  .ciclo:has(li[data-fase='envero']:is(:hover, :focus-visible)) .ciclo__fase[data-fase='envero'],
+  .ciclo:has(li[data-fase='vendimia']:is(:hover, :focus-visible)) .ciclo__fase[data-fase='vendimia'] {
+    opacity: 1;
+  }
+  .ciclo__fase {
+    transition: opacity 0.3s;
+  }
+
+  /* Centro: el día y la fase */
+  .ciclo__centro {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 44%;
+    height: fit-content;
+    display: grid;
+    gap: 0.2rem;
+    text-align: center;
+    pointer-events: none;
+  }
+  .ciclo__hoy {
+    font-style: italic;
+    color: var(--tinta-2);
+    font-size: clamp(0.8rem, 1.6vw, 0.95rem);
+  }
+  .ciclo__que {
+    font-size: clamp(0.75rem, 1.4vw, 0.875rem);
+    color: var(--tinta-2);
+    margin-top: 0.5rem;
+  }
+  .ciclo__fase-actual {
+    font-family: var(--titular);
+    font-size: clamp(1.5rem, 3.4vw, 2.4rem);
+    line-height: 1.05;
+    color: var(--mosto);
+  }
+
+  /* Lista de fases */
+  .ciclo__lista {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--tinta);
+  }
+  .ciclo__lista li {
+    display: grid;
+    grid-template-columns: 0.4rem 1fr;
+    column-gap: 1rem;
+    padding: 0.9rem 0;
+    border-bottom: 1px solid var(--filete);
+  }
+  .ciclo__lista li::before {
+    content: '';
+    grid-row: 1 / span 3;
+    background: var(--c);
+  }
+  .ciclo__lista h3 {
+    font-size: 1.375rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+  }
+  .ciclo__ahora {
+    font-family: var(--texto);
+    font-style: italic;
+    font-size: 0.875rem;
+    color: var(--mosto);
+  }
+  .ciclo__cuando {
+    font-style: italic;
+    color: var(--tinta-2);
+    font-size: 0.95rem;
+    margin: 0.1rem 0 0.25rem;
+  }
+  .ciclo__lista p:last-child {
+    margin: 0;
+    color: var(--tinta-2);
+  }
+
+  /* Al verse: las fases se trazan una tras otra y la aguja llega a hoy */
+  :global(.ciclo.is-visible) .ciclo__banda {
+    animation: trazar 1.1s var(--ease) forwards;
+    animation-delay: calc(0.15s + var(--i) * 0.18s);
+  }
+  :global(.ciclo.is-visible) .ciclo__nombre {
+    animation: aparecer 0.6s var(--ease) forwards;
+    animation-delay: calc(0.6s + var(--i) * 0.18s);
+  }
+  :global(.ciclo.is-visible) .ciclo__aguja line {
+    animation: trazar 0.9s var(--ease) 1.3s forwards;
+  }
+  :global(.ciclo.is-visible) .ciclo__punto {
+    animation: aparecer 0.4s var(--ease) 2s forwards;
+  }
+  @keyframes trazar {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes aparecer {
+    to {
+      opacity: 1;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ciclo__banda,
+    .ciclo__aguja line {
+      stroke-dashoffset: 0;
+    }
+    .ciclo__nombre,
+    .ciclo__punto {
+      opacity: 1;
+    }
+  }
+</style>

@@ -1,0 +1,203 @@
+---
+// Mensajes del formulario de contacto y libro de registro (lista de espera).
+// Tablas de sql/2026-10-formularios.sql; las RLS solo dejan leer y borrar a los socios.
+import Admin from '../../layouts/Admin.astro'
+---
+
+<Admin title="Mensajes">
+  <h1>Mensajes</h1>
+  <p class="aviso aviso--error" id="error" hidden></p>
+
+  <section class="bloque">
+    <h2>Formulario de contacto <span class="contador" id="n-mensajes"></span></h2>
+    <p class="ayuda" id="cargando-m">Cargando…</p>
+    <ol class="lista" id="mensajes"></ol>
+    <p class="vacio" id="vacio-m" hidden>No hay mensajes todavía.</p>
+  </section>
+
+  <section class="bloque">
+    <h2>Libro de registro <span class="contador" id="n-suscriptores"></span></h2>
+    <p class="ayuda">Quienes quieren que les aviséis del primer vino. Para escribirles, copiad las direcciones en el campo <strong>CCO</strong> (copia oculta) de vuestro correo, nunca en «Para».</p>
+    <div class="botones-lista">
+      <button type="button" class="boton-texto" id="copiar">Copiar direcciones</button>
+      <button type="button" class="boton-texto" id="csv">Descargar CSV</button>
+    </div>
+    <p class="ayuda" id="cargando-s">Cargando…</p>
+    <ol class="lista" id="suscriptores"></ol>
+    <p class="vacio" id="vacio-s" hidden>Nadie se ha apuntado todavía.</p>
+  </section>
+
+  <style>
+    .bloque {
+      margin-top: 2.5rem;
+    }
+    .bloque h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .contador {
+      font-family: var(--texto);
+      font-size: 1rem;
+      font-style: italic;
+      color: var(--tinta-2);
+    }
+    .lista {
+      list-style: none;
+      margin: 1rem 0 0;
+      padding: 0;
+      border-top: 1px solid var(--tinta);
+    }
+    .lista :global(li) {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.4rem 1rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--filete);
+    }
+    .lista :global(.quien) {
+      font-weight: 700;
+    }
+    .lista :global(.nuevo .quien::after) {
+      content: ' · nuevo';
+      font-weight: 400;
+      font-style: italic;
+      color: var(--mosto);
+    }
+    .lista :global(.meta) {
+      color: var(--tinta-2);
+      font-size: 0.9rem;
+      font-style: italic;
+    }
+    .lista :global(.texto) {
+      grid-column: 1 / -1;
+      white-space: pre-wrap;
+      margin: 0;
+    }
+    .lista :global(.acciones) {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: flex-end;
+      align-items: start;
+    }
+    .lista :global(.acciones a) {
+      text-decoration: none;
+    }
+    .botones-lista {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .vacio {
+      font-style: italic;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--tinta);
+    }
+  </style>
+
+  <script>
+    import { supabase } from '../../lib/supabaseBrowser.js'
+
+    const error = document.getElementById('error')!
+    const mostrarError = (m: string) => {
+      error.textContent = m
+      error.hidden = false
+    }
+    const esc = (s: string) => String(s ?? '').replace(/[&<>"]/g, (c) => `&${{ '&': 'amp', '<': 'lt', '>': 'gt', '"': 'quot' }[c]};`)
+    const cuando = (iso: string) => new Date(iso).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' })
+    let correos: { email: string; idioma: string; created_at: string }[] = []
+
+    // Borra y comprueba que de verdad se borró: si RLS lo bloquea, Supabase no da error
+    async function borrar(tabla: string, id: string) {
+      const { data, error: fallo } = await supabase!.from(tabla).delete().eq('id', id).select('id')
+      if (fallo || !data?.length) {
+        mostrarError('No se borró. ' + (fallo?.message ?? 'Tu usuario no tiene permiso (tabla admins).'))
+        return false
+      }
+      return true
+    }
+
+    async function cargarMensajes() {
+      const { data, error: fallo } = await supabase!.from('mensajes').select('*').order('created_at', { ascending: false }).limit(500)
+      document.getElementById('cargando-m')!.hidden = true
+      if (fallo) return mostrarError('No se pudieron cargar los mensajes: ' + fallo.message + ' ¿Está ejecutado sql/2026-10-formularios.sql?')
+      document.getElementById('vacio-m')!.hidden = data.length > 0
+      const nuevos = data.filter((m) => !m.leido).length
+      document.getElementById('n-mensajes')!.textContent = `(${data.length}${nuevos ? `, ${nuevos} sin leer` : ''})`
+      const lista = document.getElementById('mensajes')!
+      lista.innerHTML = data
+        .map(
+          (m) => `<li data-id="${m.id}" class="${m.leido ? '' : 'nuevo'}">
+            <span><span class="quien">${esc(m.nombre)}</span> <span class="meta">${esc(m.email)} · ${cuando(m.created_at)} · ${m.idioma === 'eu' ? 'euskera' : 'castellano'}</span></span>
+            <span class="acciones">
+              <a class="boton-texto" href="mailto:${esc(m.email)}?subject=${encodeURIComponent('Re: tu mensaje a Mazkolandas')}">Responder</a>
+              ${m.leido ? '' : '<button type="button" class="boton-texto" data-leido>Marcar leído</button>'}
+              <button type="button" class="boton-texto boton-texto--peligro" data-borrar>Borrar</button>
+            </span>
+            <p class="texto">${esc(m.mensaje)}</p>
+          </li>`,
+        )
+        .join('')
+      lista.querySelectorAll<HTMLButtonElement>('[data-leido]').forEach((b) => {
+        b.onclick = async () => {
+          const li = b.closest('li')!
+          const { data: d, error: fallo } = await supabase!.from('mensajes').update({ leido: true }).eq('id', li.dataset.id).select('id')
+          if (fallo || !d?.length) return mostrarError('No se pudo marcar. ' + (fallo?.message ?? ''))
+          cargarMensajes()
+        }
+      })
+      lista.querySelectorAll<HTMLButtonElement>('[data-borrar]').forEach((b) => {
+        b.onclick = async () => {
+          if (!confirm('¿Borrar este mensaje? No se puede deshacer.')) return
+          if (await borrar('mensajes', b.closest('li')!.dataset.id!)) cargarMensajes()
+        }
+      })
+    }
+
+    async function cargarSuscriptores() {
+      const { data, error: fallo } = await supabase!.from('suscriptores').select('*').order('created_at', { ascending: false })
+      document.getElementById('cargando-s')!.hidden = true
+      if (fallo) return mostrarError('No se pudo cargar el libro de registro: ' + fallo.message)
+      correos = data
+      document.getElementById('vacio-s')!.hidden = data.length > 0
+      document.getElementById('n-suscriptores')!.textContent = `(${data.length})`
+      const lista = document.getElementById('suscriptores')!
+      lista.innerHTML = data
+        .map(
+          (s) => `<li data-id="${s.id}">
+            <span><span class="quien">${esc(s.email)}</span> <span class="meta">${cuando(s.created_at)} · ${s.idioma === 'eu' ? 'euskera' : 'castellano'}</span></span>
+            <span class="acciones"><button type="button" class="boton-texto boton-texto--peligro" data-borrar title="Darle de baja">Dar de baja</button></span>
+          </li>`,
+        )
+        .join('')
+      lista.querySelectorAll<HTMLButtonElement>('[data-borrar]').forEach((b) => {
+        b.onclick = async () => {
+          if (!confirm('¿Dar de baja esta dirección? Se borra del libro de registro.')) return
+          if (await borrar('suscriptores', b.closest('li')!.dataset.id!)) cargarSuscriptores()
+        }
+      })
+    }
+
+    document.getElementById('copiar')!.onclick = async () => {
+      await navigator.clipboard.writeText(correos.map((c) => c.email).join(', '))
+      alert(`${correos.length} direcciones copiadas. Pégalas en el campo CCO.`)
+    }
+    document.getElementById('csv')!.onclick = () => {
+      const filas = [['email', 'idioma', 'fecha'], ...correos.map((c) => [c.email, c.idioma, c.created_at])]
+      const csv = filas.map((f) => f.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n')
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }))
+      a.download = 'libro-de-registro-mazkolandas.csv'
+      a.click()
+      URL.revokeObjectURL(a.href)
+    }
+
+    if (supabase) {
+      cargarMensajes()
+      cargarSuscriptores()
+    }
+  </script>
+</Admin>

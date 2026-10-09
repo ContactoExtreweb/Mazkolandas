@@ -1,0 +1,133 @@
+---
+// Escenario de la botella 3D, montado en su paspartú. three.js se descarga solo
+// cuando la sección está a punto de verse. Sin WebGL se queda el texto de reserva.
+interface Props {
+  lang: 'es' | 'eu'
+  botella: object
+  /** Plató oscuro a sangre (la home): sin paspartú, llena a su contenedor */
+  plato?: boolean
+}
+const { lang, botella, plato = false } = Astro.props
+
+const textos = {
+  es: { lugar: 'Cirauqui · Navarra', provisional: 'etiqueta provisional', reserva: 'Lámina en preparación', alt: 'Botella de Mazkolandas girando' },
+  eu: { lugar: 'Zirauki · Nafarroa', provisional: 'behin-behineko etiketa', reserva: 'Irudia prestatzen', alt: 'Mazkolandasen botila biraka' },
+}[lang]
+
+const config = JSON.stringify(plato ? { botella, textos, escenario: 'estudio', desplazar: 0.2 } : { botella, textos })
+---
+
+<div class:list={['botella', { 'botella--plato': plato }]} role="img" aria-label={textos.alt} data-config={config}>
+  <div class="botella__carga" aria-hidden="true"></div>
+  <p class="botella__reserva">{textos.reserva}</p>
+</div>
+
+<script>
+  // Con el ClientRouter este script corre una sola vez: se monta en cada llegada a
+  // una página con botella (astro:page-load) y se destruye al salir, para liberar
+  // el contexto WebGL (el navegador solo permite unos pocos a la vez).
+  type Montada = { destruir(): void }
+  let activas: Montada[] = []
+  let observadores: IntersectionObserver[] = []
+
+  function montarBotellas() {
+    document.querySelectorAll<HTMLElement>('.botella[data-config]').forEach((el) => {
+      const obs = new IntersectionObserver(
+        async ([e]) => {
+          if (!e.isIntersecting) return
+          obs.disconnect()
+          const { montar } = await import('../lib/botella3d.js')
+          if (!el.isConnected) return // se navegó a otra página mientras cargaba
+          const b = await montar(el, JSON.parse(el.dataset.config!)).catch((err) => {
+            console.warn('Botella 3D:', err)
+            return null
+          })
+          if (b) activas.push(b)
+        },
+        { rootMargin: '400px 0px' },
+      )
+      obs.observe(el)
+      observadores.push(obs)
+    })
+  }
+
+  function desmontarBotellas() {
+    observadores.forEach((o) => o.disconnect())
+    activas.forEach((b) => b.destruir())
+    observadores = []
+    activas = []
+  }
+
+  document.addEventListener('astro:page-load', montarBotellas)
+  document.addEventListener('astro:before-swap', desmontarBotellas)
+</script>
+
+<style>
+  /* Paspartú con filete dorado, como las láminas; la botella vive dentro */
+  .botella {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    background: var(--paspartu);
+    display: grid;
+    place-items: center;
+    cursor: grab;
+    touch-action: pan-y;
+    user-select: none;
+  }
+  .botella:active {
+    cursor: grabbing;
+  }
+  .botella::after {
+    content: '';
+    position: absolute;
+    inset: clamp(1rem, 6%, 1.75rem);
+    border: 1px solid var(--oro);
+    pointer-events: none;
+  }
+  .botella :global(canvas) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  /* Barra de carga que pulsa hasta que three.js monta el canvas */
+  .botella__carga {
+    position: absolute;
+    bottom: clamp(1rem, 6%, 1.75rem);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3rem;
+    height: 1px;
+    background: var(--oro);
+    opacity: 0.5;
+    animation: carga-pulso 1.6s ease-in-out infinite;
+  }
+  @keyframes carga-pulso {
+    0%, 100% { opacity: 0.2; width: 1.5rem; }
+    50% { opacity: 0.7; width: 3.5rem; }
+  }
+  .botella[data-montada] .botella__carga {
+    display: none;
+  }
+  .botella__reserva {
+    margin: 0;
+    font-style: italic;
+    color: var(--tinta-2);
+    font-size: 1.05rem;
+    transition: opacity 0.4s;
+  }
+  .botella[data-montada] .botella__reserva {
+    visibility: hidden;
+  }
+  /* Plató: sin paspartú ni filete; el contenedor le da el tamaño */
+  .botella--plato {
+    aspect-ratio: auto;
+    background: var(--plato);
+  }
+  .botella--plato::after {
+    content: none;
+  }
+  .botella--plato .botella__reserva {
+    color: var(--sobre-verde-2);
+  }
+</style>

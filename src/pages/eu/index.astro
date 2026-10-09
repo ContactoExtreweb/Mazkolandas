@@ -1,0 +1,13 @@
+---
+import Inicio from '../../components/Inicio.astro'
+import { getPosts } from '../../lib/posts.js'
+import { getVino } from '../../lib/vino.js'
+import { cachearEnCDN } from '../../lib/cache.js'
+
+export const prerender = false
+
+const [posts, vino] = await Promise.all([getPosts('eu', 5), getVino()])
+cachearEnCDN(Astro.response.headers)
+---
+
+<Inicio lang="eu" posts={posts} vino={vino} />

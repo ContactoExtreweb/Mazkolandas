@@ -1,0 +1,12 @@
+---
+import Cuaderno from '../../../components/Cuaderno.astro'
+import { getPosts } from '../../../lib/posts.js'
+import { cachearEnCDN } from '../../../lib/cache.js'
+
+export const prerender = false
+
+const posts = await getPosts('eu')
+cachearEnCDN(Astro.response.headers)
+---
+
+<Cuaderno lang="eu" posts={posts} />

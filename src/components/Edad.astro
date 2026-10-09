@@ -1,0 +1,109 @@
+---
+// Puerta de edad: solo marcado y estilos. Toda la lógica está en el script en
+// línea del <head> de Base.astro (sin parpadeo y sin depender de ningún módulo).
+// No es un <h1>: el título principal de cada página es el suyo (SEO).
+import Logo from './Logo.astro'
+import { T } from '../i18n.js'
+
+interface Props {
+  lang: 'es' | 'eu'
+}
+const { lang } = Astro.props
+const t = T[lang].edad
+---
+
+<div class="age-gate" role="dialog" aria-modal="true" aria-labelledby="age-gate-titulo">
+  <div class="age-gate__content">
+    <div class="age-gate__logo"><Logo /></div>
+    <p id="age-gate-titulo" class="age-gate__title">{t.titulo}</p>
+    <div class="age-gate__buttons">
+      <button type="button" class="age-gate__si" data-edad-si>{t.btnSi}</button>
+      <a href="https://www.google.com" class="age-gate__no">{t.btnNo}</a>
+    </div>
+    <p class="nota age-gate__nota">{t.nota}</p>
+  </div>
+</div>
+
+<style>
+  .age-gate {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: #080c08;
+    color: var(--sobre-verde);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--margen);
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+  }
+  :global(html[data-edad='ok']) .age-gate {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  /* Sin confirmar, la página de debajo no se desplaza */
+  :global(html:not([data-edad='ok']) body) {
+    overflow: hidden;
+  }
+  .age-gate__content {
+    max-width: 38rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3rem;
+  }
+  .age-gate__logo {
+    width: 140px;
+    height: auto;
+    color: var(--oro);
+  }
+  .age-gate__title {
+    font-family: var(--titular);
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.1;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .age-gate__buttons {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .age-gate__si,
+  .age-gate__no {
+    font-family: var(--texto);
+    font-size: 1rem;
+    padding: 0.8rem 2.2rem;
+    cursor: pointer;
+    text-decoration: none;
+    background: transparent;
+    border: 1px solid;
+    transition: background 0.2s var(--ease), color 0.2s var(--ease), border-color 0.2s var(--ease);
+  }
+  .age-gate__si {
+    border-color: var(--oro);
+    color: var(--oro);
+  }
+  .age-gate__si:hover {
+    background: var(--oro);
+    color: #080c08;
+  }
+  .age-gate__no {
+    border-color: rgba(181, 154, 90, 0.3);
+    color: var(--sobre-verde-2);
+  }
+  .age-gate__no:hover {
+    border-color: var(--sobre-verde-2);
+    color: var(--sobre-verde);
+  }
+  .age-gate__nota {
+    font-size: 0.8rem;
+    color: var(--sobre-verde-2);
+    max-width: 45ch;
+    margin: 0;
+    line-height: 1.5;
+  }
+</style>

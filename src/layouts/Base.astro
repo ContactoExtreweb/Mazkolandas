@@ -1,0 +1,204 @@
+---
+// Layout público: SEO (title, canonical, hreflang, Open Graph, schema),
+// cabecera y pie sobre el paño verde.
+import '@fontsource/libre-caslon-display/400.css'
+import '@fontsource/libre-caslon-text/400.css'
+import '@fontsource/libre-caslon-text/400-italic.css'
+import '@fontsource/libre-caslon-text/700.css'
+import '@fontsource/courier-prime/400.css'
+import '../styles/global.css'
+import Logo from '../components/Logo.astro'
+import Edad from '../components/Edad.astro'
+import { T, RUTAS, EMAIL, INSTAGRAM } from '../i18n.js'
+import { ClientRouter } from 'astro:transitions'
+
+interface Props {
+  title: string
+  description: string
+  lang?: 'es' | 'eu'
+  /** Ruta de la misma página en el otro idioma (si existe) */
+  otra?: string | null
+  /** Ruta canónica si no es la de la URL (las entradas van sin barra final) */
+  ruta?: string
+  image?: string
+  type?: 'website' | 'article'
+  schema?: object | null
+  noindex?: boolean
+}
+
+const {
+  title,
+  description,
+  lang = 'es',
+  otra = null,
+  ruta,
+  image,
+  type = 'website',
+  schema = null,
+  noindex = false,
+} = Astro.props
+
+const t = T[lang]
+const r = RUTAS[lang]
+const SITE = Astro.site ?? new URL('https://mazkolandas.es')
+const path = ruta ?? (Astro.url.pathname.endsWith('/') ? Astro.url.pathname : Astro.url.pathname + '/')
+const canonical = new URL(path, SITE).href
+const alterno = otra ? new URL(otra, SITE).href : null
+const urlEs = lang === 'es' ? canonical : alterno
+const urlEu = lang === 'eu' ? canonical : alterno
+const ogImage = new URL(image ?? '/og.png', SITE).href
+const actual = Astro.url.pathname
+const otroLang = lang === 'es' ? 'eu' : 'es'
+
+const bodega = {
+  '@context': 'https://schema.org',
+  '@type': 'Winery',
+  '@id': new URL('/#bodega', SITE).href,
+  name: 'Mazkolandas Viñedos',
+  url: SITE.href,
+  email: EMAIL,
+  logo: new URL('/favicon.svg', SITE).href,
+  description: 'Proyecto de viñedos y vino de Nerea, Julen e Iñaki en Cirauqui (Navarra).',
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Cirauqui',
+    addressRegion: 'Navarra',
+    addressCountry: 'ES',
+  },
+  areaServed: 'Navarra',
+  founder: ['Nerea', 'Julen', 'Iñaki'].map((name) => ({ '@type': 'Person', name })),
+  sameAs: [INSTAGRAM],
+}
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+    {!noindex && urlEs && urlEu && (
+      <>
+        <link rel="alternate" hreflang="es" href={urlEs} />
+        <link rel="alternate" hreflang="eu" href={urlEu} />
+        <link rel="alternate" hreflang="x-default" href={urlEs} />
+      </>
+    )}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#243020" />
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content="Mazkolandas Viñedos" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content={lang === 'eu' ? 'eu_ES' : 'es_ES'} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json" set:html={JSON.stringify(schema ? [bodega, schema] : bodega)} />
+    <script is:inline>
+      // Puerta de edad, entera aquí y en línea: no depende de ningún módulo, así que
+      // funciona aunque falle el JavaScript de las transiciones (si no, la puerta no
+      // se podría cerrar y la web quedaría bloqueada).
+      // - Ya confirmada: marca <html data-edad="ok"> antes de pintar (sin parpadeo) y
+      //   otra vez tras cada navegación, que sustituye los atributos de <html>.
+      // - Botón «Sí»: delegación en document (sobrevive a las navegaciones).
+      ;(() => {
+        const CLAVE = 'mazkolandas-edad-confirmada'
+        const html = document.documentElement
+        const confirmada = () => {
+          try {
+            return window.__edadOk || localStorage.getItem(CLAVE) === 'true'
+          } catch {
+            return !!window.__edadOk
+          }
+        }
+        const marcar = () => {
+          if (confirmada()) html.dataset.edad = 'ok'
+          else document.querySelector('[data-edad-si]')?.focus()
+        }
+        marcar()
+        if (window.__edad) return
+        window.__edad = true
+        document.addEventListener('DOMContentLoaded', marcar)
+        document.addEventListener('astro:after-swap', marcar)
+        document.addEventListener('click', (e) => {
+          if (!e.target.closest?.('[data-edad-si]')) return
+          window.__edadOk = true
+          try {
+            localStorage.setItem(CLAVE, 'true')
+          } catch {} // navegación privada estricta: vale para esta visita
+          html.dataset.edad = 'ok'
+        })
+      })()
+    </script>
+    <ClientRouter />
+  </head>
+  <body>
+    <Edad lang={lang} />
+    <a class="salto" href="#contenido">{t.saltar}</a>
+
+    <div class="verde">
+      <header class="marco cabecera">
+        <a class="cabecera__logo" href={r.inicio}><Logo /></a>
+        <nav aria-label={lang === 'eu' ? 'Nagusia' : 'Principal'}>
+          <ul>
+            <li><a href={r.vinedos} aria-current={actual.startsWith(r.vinedos) ? 'page' : undefined}>{t.nav.vinedos}</a></li>
+            <li><a href={r.cuaderno} aria-current={actual.startsWith(r.cuaderno) ? 'page' : undefined}>{t.nav.cuaderno}</a></li>
+            <li><a href={r.contacto} aria-current={actual.startsWith(r.contacto) ? 'page' : undefined}>{t.nav.contacto}</a></li>
+            <li>
+              <a class="idioma" href={otra ?? RUTAS[otroLang].inicio} hreflang={otroLang} lang={otroLang}>{t.otroIdioma}</a>
+            </li>
+          </ul>
+        </nav>
+      </header>
+    </div>
+
+    <main id="contenido">
+      <slot />
+    </main>
+
+    <footer class="verde pie" id="contacto">
+      <div class="marco">
+        <div class="pie__rejilla">
+          <div>
+            <a class="pie__correo" href={`mailto:${EMAIL}`}>{EMAIL}</a>
+            <p class="nota" style="margin:.6rem 0 0">{t.escribenosPie}</p>
+          </div>
+          <ul>
+            <li><a href={r.vinedos}>{t.nav.vinedos}</a></li>
+            <li><a href={r.cuaderno}>{t.nav.cuaderno}</a></li>
+            <li><a href={INSTAGRAM} rel="noopener" target="_blank">Instagram · @mazkolandas</a></li>
+          </ul>
+          <ul>
+            <li><a href="/aviso-legal/">{t.legal.aviso}</a></li>
+            <li><a href="/privacidad/">{t.legal.privacidad}</a></li>
+            <li><a href="/cookies/">{t.legal.cookies}</a></li>
+          </ul>
+        </div>
+        <p class="nota pie__legal">
+          © {new Date().getFullYear()} Mazkolandas Viñedos · Cirauqui / Zirauki, Navarra / Nafarroa.
+          {t.creditoLaminas}
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      // Lo que se anima al entrar en pantalla (láminas, mapa, rueda del año) lleva
+      // data-revelar y recibe .is-visible. astro:page-load salta también en la primera carga.
+      document.addEventListener('astro:page-load', () => {
+        const io = new IntersectionObserver(
+          (es) =>
+            es.forEach((e) => {
+              if (!e.isIntersecting) return
+              e.target.classList.add('is-visible')
+              io.unobserve(e.target)
+            }),
+          { rootMargin: '0px 0px -15% 0px' },
+        )
+        document.querySelectorAll('[data-revelar]').forEach((el) => io.observe(el))
+      })
+    </script>
+  </body>
+</html>

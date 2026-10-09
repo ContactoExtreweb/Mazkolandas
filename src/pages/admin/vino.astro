@@ -1,0 +1,479 @@
+---
+// El vino: datos, etiqueta y botella 3D, con vista previa en directo. Se guarda en
+// la fila única de la tabla `vino` (sql/2026-10-vino.sql). Todo en el navegador con
+// la sesión del panel; las políticas RLS hacen de portero.
+import Admin from '../../layouts/Admin.astro'
+import { VINO } from '../../data/vino.js'
+---
+
+<Admin title="Nuestro vino">
+  <h1>Nuestro vino</h1>
+  <p class="ayuda intro">
+    Mientras no lo marquéis como listo, la web enseña una botella de muestra y «por anunciar». Lo que cambiéis
+    aquí se ve en la vista previa al momento, y en la web al guardar.
+  </p>
+  <p class="aviso" id="estado" hidden></p>
+
+  <form id="form" novalidate>
+    <label class="publicar">
+      <input type="checkbox" name="listo" />
+      <span>El vino está listo: mostrarlo en la web <small>(nombre, ficha y vuestra botella)</small></span>
+    </label>
+
+    <h2>La botella</h2>
+    <div class="botella-rejilla">
+      <figure class="vista">
+        <div class="vista__escena" id="vista"><p>Cargando vista previa…</p></div>
+        <figcaption class="ayuda">Vista previa. Gírala con el dedo o el ratón.</figcaption>
+      </figure>
+
+      <div>
+        <label class="campo">
+          <span>Forma</span>
+          <select name="forma">
+            <option value="bordelesa">Bordelesa (hombros marcados)</option>
+            <option value="borgonona">Borgoñona (caída suave)</option>
+          </select>
+        </label>
+
+        <div class="colores">
+          <label class="campo">
+            <span>Vidrio</span>
+            <input type="color" name="vidrio" />
+          </label>
+          <label class="campo">
+            <span>Vino</span>
+            <input type="color" name="liquido" />
+          </label>
+          <label class="campo">
+            <span>Cápsula</span>
+            <input type="color" name="capsula" />
+          </label>
+        </div>
+        <p class="ayuda tonos">
+          Color del vino:
+          <button type="button" class="boton-texto" data-tono="#4a0b17">Tinto</button>
+          <button type="button" class="boton-texto" data-tono="#d26a7c">Rosado</button>
+          <button type="button" class="boton-texto" data-tono="#e2cf86">Blanco</button>
+        </p>
+
+        <fieldset class="campo archivo" data-archivo="etiqueta">
+          <legend>Etiqueta</legend>
+          <small>El archivo de imprenta de la etiqueta, en plano (la imagen que va pegada). JPG o PNG.</small>
+          <div class="archivo__fila">
+            <label class="boton-texto">Subir etiqueta<input type="file" accept="image/jpeg,image/png,image/webp" hidden /></label>
+            <button type="button" class="boton-texto boton-texto--peligro" data-quitar hidden>Quitar</button>
+          </div>
+        </fieldset>
+
+        <label class="campo">
+          <span>Cuánto rodea la etiqueta la botella: <output id="vuelta-valor"></output></span>
+          <input type="range" name="etiqueta_vuelta" min="0.15" max="0.9" step="0.01" />
+        </label>
+
+        <fieldset class="campo archivo" data-archivo="contraetiqueta">
+          <legend>Contraetiqueta <small>(opcional)</small></legend>
+          <div class="archivo__fila">
+            <label class="boton-texto">Subir contraetiqueta<input type="file" accept="image/jpeg,image/png,image/webp" hidden /></label>
+            <button type="button" class="boton-texto boton-texto--peligro" data-quitar hidden>Quitar</button>
+          </div>
+        </fieldset>
+
+        <fieldset class="campo archivo" data-archivo="modelo">
+          <legend>Modelo 3D de vuestra botella <small>(opcional, .glb)</small></legend>
+          <small>Solo si tenéis un 3D exacto de la botella (de un estudio o hecho a partir de fotos). Sustituye a la dibujada.</small>
+          <div class="archivo__fila">
+            <span class="archivo__nombre" hidden></span>
+            <label class="boton-texto">Subir .glb<input type="file" accept=".glb,model/gltf-binary" hidden /></label>
+            <button type="button" class="boton-texto boton-texto--peligro" data-quitar hidden>Quitar</button>
+          </div>
+        </fieldset>
+      </div>
+    </div>
+
+    <h2>Lo que se cuenta del vino</h2>
+    <div class="dos">
+      <label class="campo"><span>Nombre del vino</span><input type="text" name="nombre" maxlength="80" /></label>
+      <label class="campo"><span>Tipo</span><input type="text" name="tipo" maxlength="40" placeholder="Tinto, rosado, blanco…" /></label>
+      <label class="campo"><span>Uva</span><input type="text" name="uva" maxlength="80" placeholder="Garnacha, tempranillo…" /></label>
+      <label class="campo"><span>Añada</span><input type="text" name="anada" maxlength="10" placeholder="2025" /></label>
+    </div>
+    <label class="campo">
+      <span>Cómo y dónde se hace</span>
+      <textarea name="elaboracion" rows="3" maxlength="500" style="min-height:6rem"></textarea>
+    </label>
+    <label class="campo">
+      <span>Cómo es en copa</span>
+      <textarea name="nota" rows="3" maxlength="500" style="min-height:6rem" placeholder="En vuestras palabras: color, aroma, en boca…"></textarea>
+    </label>
+    <div class="dos">
+      <label class="campo"><span>Botón «dónde comprarlo»: texto</span><input type="text" name="comprar_texto" maxlength="40" placeholder="Dónde comprarlo" /></label>
+      <label class="campo"><span>Botón: enlace</span><input type="url" name="comprar_url" placeholder="https://…" /></label>
+    </div>
+
+    <details class="euskera">
+      <summary>Euskaraz (opcional)</summary>
+      <p class="ayuda">Lo que dejéis vacío sale como en castellano (el nombre suele ser el mismo).</p>
+      <div class="dos">
+        <label class="campo"><span>Ardoaren izena</span><input type="text" name="nombre_eu" maxlength="80" /></label>
+        <label class="campo"><span>Mota</span><input type="text" name="tipo_eu" maxlength="40" /></label>
+        <label class="campo"><span>Mahatsa</span><input type="text" name="uva_eu" maxlength="80" /></label>
+        <label class="campo"><span>Uzta</span><input type="text" name="anada_eu" maxlength="10" /></label>
+      </div>
+      <label class="campo"><span>Nola eta non egiten den</span><textarea name="elaboracion_eu" rows="3" maxlength="500" style="min-height:6rem"></textarea></label>
+      <label class="campo"><span>Nolakoa den kopan</span><textarea name="nota_eu" rows="3" maxlength="500" style="min-height:6rem"></textarea></label>
+      <label class="campo"><span>Botoiaren testua</span><input type="text" name="comprar_texto_eu" maxlength="40" placeholder="Non erosi" /></label>
+    </details>
+
+    <div class="botones">
+      <button class="boton" type="submit" id="guardar">Guardar</button>
+      <a class="boton-texto" href="/#vino" target="_blank" rel="noopener">Ver en la web</a>
+    </div>
+  </form>
+
+  <style>
+    .intro {
+      max-width: 60ch;
+      margin-bottom: 2rem;
+    }
+    #form h2 {
+      font-size: 1.6rem;
+      margin: 2.5rem 0 1.25rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--tinta);
+    }
+    .botella-rejilla {
+      display: grid;
+      gap: 1.5rem 2.5rem;
+      align-items: start;
+    }
+    @media (min-width: 760px) {
+      .botella-rejilla {
+        grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      }
+      .vista {
+        position: sticky;
+        top: 6rem;
+      }
+    }
+    .vista {
+      margin: 0;
+    }
+    .vista__escena {
+      position: relative;
+      aspect-ratio: 3 / 4;
+      background: var(--paspartu);
+      border: 1px solid var(--filete);
+      display: grid;
+      place-items: center;
+      cursor: grab;
+      touch-action: pan-y;
+    }
+    .vista__escena :global(canvas) {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .vista__escena[data-montada] p {
+      visibility: hidden;
+    }
+    .vista figcaption {
+      margin-top: 0.5rem;
+    }
+    .colores {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0 1rem;
+    }
+    input[type='color'] {
+      width: 100%;
+      height: 2.75rem;
+      padding: 0.2rem;
+      border: 1px solid var(--tinta-2);
+      background: #fff;
+      cursor: pointer;
+    }
+    input[type='range'] {
+      width: 100%;
+      accent-color: var(--mosto);
+    }
+    .tonos {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      margin: -0.5rem 0 1.4rem;
+    }
+    fieldset {
+      border: 0;
+      padding: 0;
+      margin: 0 0 1.4rem;
+      min-width: 0;
+    }
+    .archivo__fila {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: 0.4rem;
+    }
+    .archivo__fila img {
+      height: 3.5rem;
+      width: auto;
+      border: 1px solid var(--filete);
+      background: #fff;
+    }
+    .archivo__fila label:focus-within {
+      outline: 2px solid var(--mosto);
+      outline-offset: 2px;
+    }
+    .archivo__nombre {
+      font-style: italic;
+      color: var(--tinta-2);
+    }
+    .dos {
+      display: grid;
+      gap: 0 1.25rem;
+    }
+    @media (min-width: 700px) {
+      .dos {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    .euskera {
+      border: 1px solid var(--tinta);
+      padding: 1rem 1.25rem 0.25rem;
+      margin: 0.5rem 0 1.5rem;
+      background: #fff;
+    }
+    .euskera summary {
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 1rem;
+    }
+    .publicar {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 1rem 1.25rem;
+      background: #fff;
+      border: 1px solid var(--tinta);
+    }
+    .publicar small {
+      font-weight: 400;
+      color: var(--tinta-2);
+    }
+    .botones {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--tinta);
+    }
+    .botones a {
+      text-decoration: none;
+    }
+  </style>
+
+  <script define:vars={{ defecto: VINO }}>
+    window.__VINO_DEFECTO__ = defecto
+  </script>
+
+  <script>
+    import { supabase } from '../../lib/supabaseBrowser.js'
+    import { refrescarWeb } from '../../lib/refrescarWeb.js'
+    import { comprimir, rutaEnBucket } from '../../lib/imagen.js'
+
+    const form = document.getElementById('form') as HTMLFormElement
+    const campo = (n: string) => form.elements.namedItem(n) as HTMLInputElement
+    const estado = document.getElementById('estado')!
+    const guardar = document.getElementById('guardar') as HTMLButtonElement
+    const vista = document.getElementById('vista')!
+    const defecto = (window as any).__VINO_DEFECTO__
+
+    const TEXTOS = [
+      'nombre', 'tipo', 'uva', 'anada', 'elaboracion', 'nota', 'comprar_texto', 'comprar_url',
+      'nombre_eu', 'tipo_eu', 'uva_eu', 'anada_eu', 'elaboracion_eu', 'nota_eu', 'comprar_texto_eu',
+    ]
+    // Archivos: URL actual y las que se sustituyen (se borran del Storage al guardar)
+    const archivos: Record<string, string | null> = { etiqueta: null, contraetiqueta: null, modelo: null }
+    let quitados: string[] = []
+
+    const avisar = (m: string, tipo: 'ok' | 'error') => {
+      estado.textContent = m
+      estado.className = `aviso aviso--${tipo}`
+      estado.hidden = false
+      estado.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    }
+
+    // ── Vista previa 3D (la misma botella que la web) ──
+    let previa: { destruir(): void } | null = null
+    let temporizador = 0
+    const config = () => ({
+      forma: campo('forma').value,
+      vidrio: campo('vidrio').value,
+      liquido: campo('liquido').value,
+      capsula: campo('capsula').value,
+      etiqueta: archivos.etiqueta,
+      etiquetaVuelta: Number(campo('etiqueta_vuelta').value),
+      contraetiqueta: archivos.contraetiqueta,
+      modelo: archivos.modelo,
+    })
+    function actualizarVista() {
+      clearTimeout(temporizador)
+      temporizador = window.setTimeout(async () => {
+        const { montar } = await import('../../lib/botella3d.js')
+        previa?.destruir()
+        previa = await montar(vista, {
+          botella: config(),
+          textos: { lugar: 'Cirauqui · Navarra', provisional: 'etiqueta provisional' },
+          progreso: 0.62,
+        }).catch((e) => {
+          avisar('No se pudo dibujar la vista previa: ' + (e.message ?? e), 'error')
+          return null
+        })
+      }, 350)
+    }
+    form.addEventListener('input', (e) => {
+      const n = (e.target as HTMLInputElement).name
+      if (n === 'etiqueta_vuelta') pintarVuelta()
+      if (['forma', 'vidrio', 'liquido', 'capsula', 'etiqueta_vuelta'].includes(n)) actualizarVista()
+    })
+    const pintarVuelta = () =>
+      (document.getElementById('vuelta-valor')!.textContent = Math.round(Number(campo('etiqueta_vuelta').value) * 100) + ' %')
+
+    document.querySelectorAll<HTMLButtonElement>('[data-tono]').forEach((b) => {
+      b.onclick = () => {
+        campo('liquido').value = b.dataset.tono!
+        actualizarVista()
+      }
+    })
+
+    // ── Archivos: etiqueta, contraetiqueta y modelo ──
+    function pintarArchivo(nombre: string) {
+      const caja = document.querySelector<HTMLElement>(`[data-archivo="${nombre}"]`)!
+      const url = archivos[nombre]
+      const txt = caja.querySelector<HTMLElement>('.archivo__nombre')
+      // Miniatura de las imágenes: se crea solo cuando hay archivo (nunca una <img> vacía)
+      let img = caja.querySelector('img')
+      if (!txt && url && !img) {
+        img = document.createElement('img')
+        img.alt = ''
+        caja.querySelector('.archivo__fila')!.prepend(img)
+      }
+      if (img && !url) img.remove()
+      else if (img && url) img.src = url
+      if (txt) {
+        txt.hidden = !url
+        txt.textContent = url ? decodeURIComponent(url.split('/').pop()!) : ''
+      }
+      caja.querySelector<HTMLElement>('[data-quitar]')!.hidden = !url
+    }
+    document.querySelectorAll<HTMLElement>('[data-archivo]').forEach((caja) => {
+      const nombre = caja.dataset.archivo!
+      const input = caja.querySelector<HTMLInputElement>('input[type=file]')!
+      caja.querySelector<HTMLButtonElement>('[data-quitar]')!.onclick = () => {
+        if (archivos[nombre]) quitados.push(archivos[nombre]!)
+        archivos[nombre] = null
+        pintarArchivo(nombre)
+        actualizarVista()
+      }
+      input.onchange = async () => {
+        const file = input.files?.[0]
+        if (!file || !supabase) return
+        guardar.disabled = true
+        avisar('Subiendo…', 'ok')
+        try {
+          const esModelo = nombre === 'modelo'
+          const cuerpo = esModelo ? file : await comprimir(file, 2400, 0.9)
+          const ruta = `vino/${nombre}-${crypto.randomUUID()}.${esModelo ? 'glb' : 'jpg'}`
+          const { error } = await supabase.storage
+            .from('cuaderno')
+            .upload(ruta, cuerpo, { contentType: esModelo ? 'model/gltf-binary' : 'image/jpeg' })
+          if (error) throw error
+          if (archivos[nombre]) quitados.push(archivos[nombre]!)
+          archivos[nombre] = supabase.storage.from('cuaderno').getPublicUrl(ruta).data.publicUrl
+          pintarArchivo(nombre)
+          actualizarVista()
+          estado.hidden = true
+        } catch (e: any) {
+          avisar(`No se pudo subir «${file.name}»: ${e.message ?? e}`, 'error')
+        }
+        input.value = ''
+        guardar.disabled = false
+      }
+    })
+
+    // ── Cargar ──
+    function rellenar(d: any) {
+      campo('listo').checked = !!d.listo
+      campo('forma').value = d.forma
+      campo('vidrio').value = d.vidrio
+      campo('liquido').value = d.liquido
+      campo('capsula').value = d.capsula
+      campo('etiqueta_vuelta').value = String(d.etiqueta_vuelta)
+      for (const n of TEXTOS) campo(n).value = d[n] ?? ''
+      for (const n of Object.keys(archivos)) {
+        archivos[n] = d[n] || null
+        pintarArchivo(n)
+      }
+      if (TEXTOS.some((n) => n.endsWith('_eu') && d[n])) (document.querySelector('.euskera') as HTMLDetailsElement).open = true
+      pintarVuelta()
+      actualizarVista()
+    }
+    async function cargar() {
+      const b = defecto.botella
+      const base = { listo: defecto.listo, forma: b.forma, vidrio: b.vidrio, liquido: b.liquido, capsula: b.capsula, etiqueta_vuelta: b.etiquetaVuelta }
+      if (!supabase) return rellenar(base) // en local sin Supabase: solo vista previa
+      const { data, error } = await supabase.from('vino').select('*').eq('id', 1).maybeSingle()
+      if (error || !data) {
+        avisar('Falta crear la tabla del vino: ejecuta sql/2026-10-vino.sql en Supabase.', 'error')
+        return rellenar(base)
+      }
+      rellenar(data)
+    }
+
+    // ── Guardar ──
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      if (!supabase) return
+      const url = campo('comprar_url').value.trim()
+      if (url && !/^https?:\/\//.test(url)) return avisar('El enlace del botón tiene que empezar por https://', 'error'), campo('comprar_url').focus()
+      if (campo('listo').checked && !campo('nombre').value.trim())
+        return avisar('Para mostrar el vino en la web hace falta al menos su nombre.', 'error'), campo('nombre').focus()
+
+      const fila: Record<string, unknown> = {
+        listo: campo('listo').checked,
+        forma: campo('forma').value,
+        vidrio: campo('vidrio').value,
+        liquido: campo('liquido').value,
+        capsula: campo('capsula').value,
+        etiqueta_vuelta: Number(campo('etiqueta_vuelta').value),
+        ...archivos,
+      }
+      for (const n of TEXTOS) fila[n] = campo(n).value.trim()
+
+      guardar.disabled = true
+      guardar.textContent = 'Guardando…'
+      // .select() para comprobar que se guardó de verdad (RLS no da error, guarda 0 filas)
+      const { data, error } = await supabase.from('vino').update(fila).eq('id', 1).select('id')
+      guardar.disabled = false
+      guardar.textContent = 'Guardar'
+      if (error || !data?.length)
+        return avisar('No se guardó. ' + (error?.message ?? 'Tu usuario no tiene permiso (tabla admins).'), 'error')
+
+      // Primero guardar, después borrar del Storage los archivos sustituidos
+      const rutas = quitados.map(rutaEnBucket).filter(Boolean)
+      if (rutas.length) await supabase.storage.from('cuaderno').remove(rutas)
+      quitados = []
+      await refrescarWeb()
+      avisar(fila.listo ? 'Guardado. El vino ya se ve en la web.' : 'Guardado. En la web sigue la botella de muestra hasta que lo marquéis como listo.', 'ok')
+    })
+
+    cargar()
+  </script>
+</Admin>

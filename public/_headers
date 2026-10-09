@@ -1,0 +1,16 @@
+# Cabeceras de seguridad (Netlify), como en Guadicar.
+/*
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+
+# El panel: nunca dentro de un iframe y fuera de buscadores
+/admin/*
+  X-Frame-Options: DENY
+  Content-Security-Policy: frame-ancestors 'none'
+  X-Robots-Tag: noindex, nofollow
+
+# Fuentes y JS con nombre con hash: caché larga
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable

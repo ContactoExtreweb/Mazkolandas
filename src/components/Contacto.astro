@@ -1,0 +1,149 @@
+---
+// Página de contacto: formulario (→ /api/contacto → tabla mensajes) y correo directo.
+import Base from '../layouts/Base.astro'
+import { T, RUTAS, EMAIL, INSTAGRAM } from '../i18n.js'
+
+interface Props {
+  lang: 'es' | 'eu'
+}
+const { lang } = Astro.props
+const f = T[lang].formulario
+
+const C = {
+  es: {
+    title: 'Contacto | Mazkolandas Viñedos',
+    description: 'Escríbenos para cualquier duda sobre nuestros viñedos en Cirauqui (Navarra) o para saber antes que nadie cuándo sale nuestro primer vino.',
+    h1: 'Contacto',
+    texto: 'Si quieres saber más sobre el proyecto, preguntarnos algo o enterarte antes que nadie de cuándo sale nuestro primer vino, escríbenos y te responderemos lo antes posible.',
+    emailInfo: 'También puedes escribirnos directamente a',
+    redes: 'O seguirnos en',
+    form: {
+      nombre: 'Nombre',
+      email: 'Correo electrónico',
+      mensaje: 'Mensaje',
+      enviar: 'Enviar mensaje',
+      placeholderNombre: 'Tu nombre',
+      placeholderEmail: 'tu@correo.com',
+      placeholderMensaje: 'Hola, me gustaría saber…',
+      ok: 'Mensaje enviado. Gracias por escribirnos: te responderemos pronto.',
+    },
+  },
+  eu: {
+    title: 'Harremana | Mazkolandas Viñedos',
+    description: 'Idatz iezaguzu Ziraukiko (Nafarroa) gure mahastiei buruzko edozein zalantzarekin edo gure lehen ardoa noiz aterako den inor baino lehen jakiteko.',
+    h1: 'Harremana',
+    texto: 'Proiektuari buruz gehiago jakin nahi baduzu, zerbait galdetu edo gure lehen ardoa noiz aterako den inor baino lehen jakin, idatz iezaguzu eta ahalik eta lasterren erantzungo dizugu.',
+    emailInfo: 'Zuzenean ere idatz diezagukezu helbide honetara:',
+    redes: 'Edo jarraitu gaitzazu',
+    form: {
+      nombre: 'Izena',
+      email: 'Posta elektronikoa',
+      mensaje: 'Mezua',
+      enviar: 'Mezua bidali',
+      placeholderNombre: 'Zure izena',
+      placeholderEmail: 'zure@posta.com',
+      placeholderMensaje: 'Kaixo, jakin nahi nuke…',
+      ok: 'Mezua bidali da. Eskerrik asko idazteagatik: laster erantzungo dizugu.',
+    },
+  },
+}[lang]
+---
+
+<Base title={C.title} description={C.description} lang={lang} otra={RUTAS[lang === 'es' ? 'eu' : 'es'].contacto}>
+  <header class="verde contacto__cabeza">
+    <div class="marco">
+      <h1>{C.h1}</h1>
+      <p>{C.texto}</p>
+    </div>
+  </header>
+
+  <section class="marco contacto">
+    <div class="contacto__rejilla">
+      <div class="contacto__info">
+        <p>{C.emailInfo} <a href={`mailto:${EMAIL}`}>{EMAIL}</a>.</p>
+        <p>{C.redes} <a href={INSTAGRAM} target="_blank" rel="noopener">Instagram</a>.</p>
+      </div>
+
+      <form
+        class="formulario contacto__form"
+        id="formulario"
+        action="/api/contacto"
+        method="POST"
+        data-envio
+        data-enviando={f.enviando}
+        data-ok={C.form.ok}
+        data-error={f.error}
+      >
+        <label>
+          {C.form.nombre}
+          <input type="text" name="nombre" placeholder={C.form.placeholderNombre} required autocomplete="name" maxlength="80" />
+        </label>
+        <label>
+          {C.form.email}
+          <input type="email" name="email" placeholder={C.form.placeholderEmail} required autocomplete="email" maxlength="200" />
+        </label>
+        <label>
+          {C.form.mensaje}
+          <textarea name="mensaje" rows="6" placeholder={C.form.placeholderMensaje} required maxlength="4000"></textarea>
+        </label>
+        <div class="trampa" aria-hidden="true">
+          <label>Empresa <input type="text" name="empresa" tabindex="-1" autocomplete="off" /></label>
+        </div>
+        <input type="hidden" name="ts" value={Date.now()} />
+        <input type="hidden" name="idioma" value={lang} />
+        <p class="formulario__aviso">{f.aviso} <a href="/privacidad/">{f.privacidad}</a>.</p>
+        <button type="submit" class="boton">{C.form.enviar}</button>
+        <p class="formulario__estado" role="status"></p>
+      </form>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { prepararFormularios } from '../lib/enviarFormulario.js'
+  document.addEventListener('astro:page-load', prepararFormularios)
+</script>
+
+<style>
+  .contacto__cabeza {
+    padding-block: calc(var(--linea) * 2) calc(var(--linea) * 3);
+  }
+  .contacto__cabeza h1 {
+    font-size: clamp(2.6rem, 5vw + 0.6rem, 5.5rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--paspartu);
+    margin-bottom: var(--linea);
+  }
+  .contacto__cabeza p {
+    font-size: 1.1875rem;
+    max-width: 52ch;
+    margin: 0;
+  }
+  .contacto {
+    padding-top: calc(var(--linea) * 3);
+  }
+  .contacto__rejilla {
+    display: grid;
+    gap: calc(var(--linea) * 2) 5rem;
+  }
+  @media (min-width: 900px) {
+    .contacto__rejilla {
+      grid-template-columns: minmax(15rem, 0.7fr) minmax(0, 1.3fr);
+      align-items: start;
+    }
+  }
+  .contacto__info {
+    font-size: 1.125rem;
+    border-top: 1px solid var(--tinta);
+    padding-top: var(--linea);
+  }
+  .contacto__info p {
+    margin-bottom: 0.75rem;
+  }
+  .contacto__form {
+    background: var(--paspartu);
+    border: 1px solid var(--filete);
+    padding: clamp(1.5rem, 4vw, 3rem);
+  }
+</style>

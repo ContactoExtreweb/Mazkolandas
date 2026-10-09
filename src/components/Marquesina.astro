@@ -1,0 +1,53 @@
+---
+interface Props {
+  texto: string
+}
+const { texto } = Astro.props
+---
+
+<div class="marquesina" aria-hidden="true">
+  <div class="marquesina__pista">
+    <span>{texto}</span>
+    <span>{texto}</span>
+    <span>{texto}</span>
+    <span>{texto}</span>
+  </div>
+</div>
+
+<style>
+  .marquesina {
+    width: 100%;
+    overflow: hidden;
+    padding-block: 4rem;
+    background: var(--verde);
+    color: var(--paspartu);
+    border-block: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .marquesina__pista {
+    display: flex;
+    gap: 3rem;
+    animation: mover 40s linear infinite;
+  }
+  .marquesina__pista span {
+    font-family: var(--titular);
+    font-size: clamp(3rem, 6vw, 5rem);
+    font-style: italic;
+    opacity: 0.8;
+  }
+  .marquesina__pista span::after {
+    content: '✦';
+    margin-left: 3rem;
+    font-style: normal;
+    font-size: 0.6em;
+    vertical-align: middle;
+    color: var(--oro);
+  }
+  
+  @keyframes mover {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(calc(-25% - 0.75rem)); } /* Ajuste basado en 4 repeticiones */
+  }
+</style>

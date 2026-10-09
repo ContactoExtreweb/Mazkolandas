@@ -1,0 +1,489 @@
+/* Mazkolandas — láminas de ampelografía.
+   Paño verde de encuadernación, papel de lámina, tinta, granate de mosto
+   solo para la acción principal y filete dorado solo sobre el verde.
+   Sin sombras, sin degradados, sin esquinas redondeadas. */
+
+:root {
+  --verde: #243020;
+  --verde-2: #34432e;
+  --sobre-verde: #e8ecdf;
+  --sobre-verde-2: #b9c2a8;
+  --papel: #eef0e8;
+  --paspartu: #f4f3ee;
+  --tinta: #1d211b;
+  --tinta-2: #4b5146;
+  --filete: #c9cdbf;
+  --mosto: #6b1f3a;
+  --mosto-hondo: #521629;
+  --oro: #b59a5a;
+  --plato: #0a0f09; /* fondo del plató de la botella 3D (igual que su escena) */
+
+  --titular: 'Libre Caslon Display', 'Libre Caslon Text', Georgia, serif;
+  --texto: 'Libre Caslon Text', Georgia, serif;
+  --insignia: 'Courier Prime', 'Courier New', monospace;
+
+  --linea: 1.5rem;
+  --margen: max(16px, 5vw);
+  --ancho: 1240px;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scrollbar-color: var(--verde-2) var(--papel);
+  scrollbar-width: thin;
+}
+
+body {
+  margin: 0;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: var(--texto);
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  overflow-x: clip;
+  caret-color: var(--mosto);
+  font-variant-numeric: oldstyle-nums;
+}
+
+::selection {
+  background: var(--mosto);
+  color: var(--paspartu);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+  transition: color 0.15s, text-decoration-color 0.15s;
+}
+a:hover {
+  color: var(--mosto);
+  text-decoration-color: currentColor;
+}
+
+:focus-visible {
+  outline: 2px solid var(--mosto);
+  outline-offset: 3px;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--titular);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  margin: 0;
+}
+
+p {
+  margin: 0 0 var(--linea);
+  text-wrap: pretty;
+}
+
+.salto {
+  position: absolute;
+  left: -9999px;
+}
+.salto:focus {
+  left: var(--margen);
+  top: 0.5rem;
+  z-index: 10;
+  background: var(--paspartu);
+  padding: 0.5rem 0.75rem;
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── Página y campos de color ───────────────────────────────────────── */
+
+.marco {
+  width: 100%;
+  max-width: calc(var(--ancho) + 2 * var(--margen));
+  margin-inline: auto;
+  padding-inline: var(--margen);
+}
+
+/* Paño verde: el campo dominante (cabecera, portada, vino, pie) */
+.verde {
+  background: var(--verde);
+  color: var(--sobre-verde);
+}
+.verde a:hover {
+  color: var(--paspartu);
+}
+.verde :focus-visible {
+  outline-color: var(--oro);
+}
+.verde ::selection {
+  background: var(--oro);
+  color: var(--verde);
+}
+
+.titulo-seccion {
+  font-size: clamp(1.9rem, 2.4vw + 1rem, 3rem);
+  margin-bottom: calc(var(--linea) * 1.25);
+}
+
+/* Etiqueta de botánico: cursiva, minúscula, nunca versalitas espaciadas */
+.nota {
+  font-style: italic;
+  color: var(--tinta-2);
+  font-size: 0.95rem;
+}
+.verde .nota {
+  color: var(--sobre-verde-2);
+}
+
+/* ── Lámina montada en paspartú ─────────────────────────────────────── */
+
+.lamina {
+  margin: 0;
+}
+.lamina__monte {
+  background: var(--paspartu);
+  padding: clamp(0.8rem, 2.4vw, 1.7rem);
+}
+.lamina__img {
+  position: relative;
+}
+.lamina__img img {
+  width: 100%;
+}
+/* Filete interior del paspartú */
+.lamina__img::after {
+  content: '';
+  position: absolute;
+  inset: -7px;
+  border: 1px solid var(--oro);
+  pointer-events: none;
+}
+.lamina figcaption {
+  font-style: italic;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin-top: 0.75rem;
+  color: var(--tinta-2);
+}
+.verde .lamina figcaption {
+  color: var(--sobre-verde-2);
+}
+
+/* ── Ficha descriptiva (como la tabla de una lámina) ────────────────── */
+
+.ficha {
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(7.5rem, auto) 1fr;
+  border-top: 1px solid currentColor;
+}
+.ficha dt,
+.ficha dd {
+  margin: 0;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--filete);
+}
+.ficha dt {
+  font-style: italic;
+  color: var(--tinta-2);
+  padding-right: 1.5rem;
+}
+.verde .ficha dt,
+.verde .ficha dd {
+  border-bottom-color: var(--verde-2);
+}
+.verde .ficha dt {
+  color: var(--sobre-verde-2);
+}
+
+/* ── Acciones ───────────────────────────────────────────────────────── */
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--texto);
+  font-size: 1.0625rem;
+  line-height: 1.2;
+  text-decoration: none;
+  padding: 0.95rem 1.5rem;
+  border: 1px solid var(--mosto);
+  background: var(--mosto);
+  color: var(--paspartu);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+.boton:hover {
+  background: var(--mosto-hondo);
+  border-color: var(--mosto-hondo);
+  color: var(--paspartu);
+}
+.boton--linea {
+  background: transparent;
+  border-color: currentColor;
+  color: inherit;
+}
+.boton--linea:hover {
+  background: transparent;
+  border-color: var(--mosto);
+  color: var(--mosto);
+}
+.verde .boton--linea:hover {
+  border-color: var(--paspartu);
+  color: var(--paspartu);
+}
+.boton svg {
+  width: 1.1em;
+  height: 1.1em;
+  transition: transform 0.25s var(--ease);
+}
+.boton:hover svg {
+  transform: translateX(3px);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+}
+
+/* ── Cabecera y pie ─────────────────────────────────────────────────── */
+
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem 2rem;
+  padding-block: 1rem;
+}
+.cabecera__logo {
+  display: block;
+  width: 76px;
+  height: 76px;
+  color: var(--sobre-verde);
+  text-decoration: none;
+}
+.cabecera__logo:hover {
+  color: var(--paspartu);
+}
+.cabecera nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.75rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.cabecera nav a {
+  text-decoration: none;
+  display: inline-block;
+  padding-block: 0.4rem;
+  border-bottom: 1px solid transparent;
+}
+.cabecera nav a:hover {
+  border-bottom-color: var(--oro);
+}
+.cabecera nav a[aria-current='page'] {
+  border-bottom-color: var(--oro);
+}
+.cabecera nav .idioma {
+  font-style: italic;
+  color: var(--sobre-verde-2);
+}
+@media (max-width: 480px) {
+  .cabecera__logo {
+    width: 52px;
+    height: 52px;
+  }
+  .cabecera nav ul {
+    gap: 0.25rem 1.1rem;
+    font-size: 0.95rem;
+  }
+}
+
+.pie {
+  margin-top: calc(var(--linea) * 4);
+  padding-block: calc(var(--linea) * 3) calc(var(--linea) * 1.5);
+}
+.pie__rejilla {
+  display: grid;
+  gap: calc(var(--linea) * 1.5) 3rem;
+}
+@media (min-width: 760px) {
+  .pie__rejilla {
+    grid-template-columns: 1.5fr 1fr 1fr;
+  }
+}
+.pie__correo {
+  font-family: var(--titular);
+  font-size: clamp(1.5rem, 1.8vw + 0.8rem, 2.4rem);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.pie ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.pie li a {
+  display: inline-block;
+  padding-block: 0.25rem;
+}
+.pie__legal {
+  margin: calc(var(--linea) * 2.5) 0 0;
+  padding-top: var(--linea);
+  border-top: 1px solid var(--verde-2);
+  font-size: 0.875rem;
+}
+
+/* ── Texto largo (blog, viñedos, legales) ───────────────────────────── */
+
+.prosa {
+  max-width: 66ch;
+}
+.prosa h2 {
+  font-size: clamp(1.45rem, 1vw + 1.1rem, 1.85rem);
+  margin: calc(var(--linea) * 2) 0 calc(var(--linea) * 0.6);
+}
+.prosa ul {
+  padding-left: 0;
+  list-style: none;
+  margin: 0 0 var(--linea);
+}
+.prosa li {
+  padding-left: 1.4rem;
+  position: relative;
+  margin-bottom: 0.4rem;
+}
+.prosa li::before {
+  content: '–';
+  position: absolute;
+  left: 0;
+  color: var(--mosto);
+}
+.prosa strong {
+  font-weight: 700;
+}
+
+/* ── Formularios públicos (contacto y libro de registro) ────────────── */
+
+.formulario {
+  display: grid;
+  gap: 1.25rem;
+}
+.formulario label:not(.formulario__acepto) {
+  display: grid;
+  gap: 0.4rem;
+  font-style: italic;
+  color: var(--tinta-2);
+}
+.formulario input:not([type='checkbox']),
+.formulario textarea {
+  font: inherit;
+  font-style: normal;
+  font-size: 1.0625rem;
+  color: var(--tinta);
+  background: var(--papel);
+  border: 1px solid var(--filete);
+  border-radius: 0;
+  padding: 0.8rem 1rem;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+.formulario textarea {
+  resize: vertical;
+  min-height: 9rem;
+}
+.formulario input:focus,
+.formulario textarea:focus {
+  outline: none;
+  border-color: var(--mosto);
+}
+.formulario input::placeholder,
+.formulario textarea::placeholder {
+  color: var(--tinta-2);
+  opacity: 0.7;
+}
+.formulario__acepto {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  font-size: 0.95rem;
+  color: var(--tinta-2);
+}
+.formulario__acepto input {
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: 0.2rem;
+  accent-color: var(--mosto);
+  flex: none;
+}
+.formulario__aviso {
+  font-size: 0.875rem;
+  color: var(--tinta-2);
+  margin: 0;
+}
+.formulario__estado {
+  margin: 0;
+  font-style: italic;
+}
+.formulario__estado:empty {
+  display: none;
+}
+.formulario__estado[data-tipo='ok'] {
+  color: var(--verde);
+}
+.formulario__estado[data-tipo='error'] {
+  color: var(--mosto);
+}
+.formulario .boton {
+  justify-self: start;
+}
+.formulario .boton:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+/* Honeypot: fuera de pantalla, no con display:none (los bots lo detectan) */
+.trampa {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

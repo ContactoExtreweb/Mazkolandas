@@ -1,0 +1,410 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-08T18:00:00Z",
+  "title": "Design System: Mazkolandas Viñedos",
+  "extensions": {
+    "colorMeta": {
+      "verde": {
+        "role": "neutral",
+        "displayName": "Paño verde viña",
+        "canonical": "#243020",
+        "tonalRamp": [
+          "#141b12",
+          "#243020",
+          "#34432e",
+          "#4c5e45",
+          "#6a7b62",
+          "#8f9e86",
+          "#b9c2a8",
+          "#e8ecdf"
+        ]
+      },
+      "verde-2": {
+        "role": "neutral",
+        "displayName": "Filete sobre verde",
+        "canonical": "#34432e",
+        "tonalRamp": [
+          "#141b12",
+          "#243020",
+          "#34432e",
+          "#4c5e45",
+          "#6a7b62",
+          "#8f9e86",
+          "#b9c2a8",
+          "#e8ecdf"
+        ]
+      },
+      "sobre-verde": {
+        "role": "neutral",
+        "displayName": "Texto sobre verde",
+        "canonical": "#e8ecdf",
+        "tonalRamp": [
+          "#141b12",
+          "#243020",
+          "#34432e",
+          "#4c5e45",
+          "#6a7b62",
+          "#8f9e86",
+          "#b9c2a8",
+          "#e8ecdf"
+        ]
+      },
+      "sobre-verde-2": {
+        "role": "neutral",
+        "displayName": "Nota sobre verde",
+        "canonical": "#b9c2a8",
+        "tonalRamp": [
+          "#141b12",
+          "#243020",
+          "#34432e",
+          "#4c5e45",
+          "#6a7b62",
+          "#8f9e86",
+          "#b9c2a8",
+          "#e8ecdf"
+        ]
+      },
+      "papel": {
+        "role": "neutral",
+        "displayName": "Papel de lámina",
+        "canonical": "#eef0e8",
+        "tonalRamp": [
+          "#1d211b",
+          "#353a32",
+          "#4b5146",
+          "#6b7066",
+          "#8f9488",
+          "#c9cdbf",
+          "#e2e5da",
+          "#eef0e8"
+        ]
+      },
+      "paspartu": {
+        "role": "neutral",
+        "displayName": "Paspartú",
+        "canonical": "#f4f3ee",
+        "tonalRamp": [
+          "#26251f",
+          "#3f3d36",
+          "#5c5a51",
+          "#7d7b71",
+          "#a19f95",
+          "#c7c5bc",
+          "#e6e5de",
+          "#f4f3ee"
+        ]
+      },
+      "tinta": {
+        "role": "neutral",
+        "displayName": "Tinta",
+        "canonical": "#1d211b",
+        "tonalRamp": [
+          "#1d211b",
+          "#353a32",
+          "#4b5146",
+          "#6b7066",
+          "#8f9488",
+          "#c9cdbf",
+          "#e2e5da",
+          "#eef0e8"
+        ]
+      },
+      "tinta-2": {
+        "role": "neutral",
+        "displayName": "Tinta apagada",
+        "canonical": "#4b5146",
+        "tonalRamp": [
+          "#1d211b",
+          "#353a32",
+          "#4b5146",
+          "#6b7066",
+          "#8f9488",
+          "#c9cdbf",
+          "#e2e5da",
+          "#eef0e8"
+        ]
+      },
+      "filete": {
+        "role": "neutral",
+        "displayName": "Filete",
+        "canonical": "#c9cdbf",
+        "tonalRamp": [
+          "#1d211b",
+          "#353a32",
+          "#4b5146",
+          "#6b7066",
+          "#8f9488",
+          "#c9cdbf",
+          "#e2e5da",
+          "#eef0e8"
+        ]
+      },
+      "mosto": {
+        "role": "primary",
+        "displayName": "Granate de mosto",
+        "canonical": "#6b1f3a",
+        "tonalRamp": [
+          "#2a0b16",
+          "#521629",
+          "#6b1f3a",
+          "#8a3553",
+          "#a95a75",
+          "#c78a9e",
+          "#e3bfcb",
+          "#f6e9ee"
+        ]
+      },
+      "mosto-hondo": {
+        "role": "primary",
+        "displayName": "Mosto hondo",
+        "canonical": "#521629",
+        "tonalRamp": [
+          "#2a0b16",
+          "#521629",
+          "#6b1f3a",
+          "#8a3553",
+          "#a95a75",
+          "#c78a9e",
+          "#e3bfcb",
+          "#f6e9ee"
+        ]
+      },
+      "oro": {
+        "role": "secondary",
+        "displayName": "Dorado de filete",
+        "canonical": "#b59a5a",
+        "tonalRamp": [
+          "#2e2614",
+          "#4f4223",
+          "#735f33",
+          "#957c44",
+          "#b59a5a",
+          "#cab583",
+          "#ded0ae",
+          "#f2ecdc"
+        ]
+      },
+      "campo": {
+        "role": "neutral",
+        "displayName": "Blanco de campo",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#1d211b",
+          "#4b5146",
+          "#8f9488",
+          "#c9cdbf",
+          "#e2e5da",
+          "#eef0e8",
+          "#f8f9f5",
+          "#ffffff"
+        ]
+      },
+      "error": {
+        "role": "tertiary",
+        "displayName": "Rojo de error",
+        "canonical": "#a3141c",
+        "tonalRamp": [
+          "#3d0509",
+          "#5e0a10",
+          "#a3141c",
+          "#c23a40",
+          "#d9686c",
+          "#ea9a9c",
+          "#f6cccd",
+          "#fbeeee"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "H1 de cada página, sobre el paño verde, en color paspartú."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Títulos de sección."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Títulos del índice del cuaderno y correo del pie."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Todo el texto de lectura, a 66ch como máximo, con cifras de estilo antiguo."
+      },
+      "lead": {
+        "displayName": "Lead",
+        "purpose": "Entradillas bajo el H1 y textos de sección destacados."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Etiquetas de botánico: notas, pies, términos de ficha y metadatos, siempre en cursiva y minúscula (font-style: italic)."
+      },
+      "headline-prosa": {
+        "displayName": "Headline de prosa",
+        "purpose": "H2 dentro de textos largos y preguntas frecuentes."
+      },
+      "body-large": {
+        "displayName": "Body grande",
+        "purpose": "Prosa larga: cuerpo de entradas, viñedos, carta de quiénes somos."
+      },
+      "lead-large": {
+        "displayName": "Lead grande",
+        "purpose": "Extracto bajo el H1 de una entrada y firma de los socios."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Pies de lámina, línea legal del pie y ayudas del panel."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "ease",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Trazo de anotaciones, óvalo de la parte, flecha del botón y signos de desplegable."
+      },
+      {
+        "name": "trazo",
+        "value": "stroke-dashoffset 1 → 0, 0.9s, escalonado 0.35s, retraso 0.5s",
+        "purpose": "Las líneas guía de las anotaciones se dibujan al cargar."
+      },
+      {
+        "name": "aparece",
+        "value": "opacity 0 → 1, 0.6s ease-out, retraso 1.1s escalonado",
+        "purpose": "Las etiquetas de anotación aparecen tras su línea."
+      },
+      {
+        "name": "estado",
+        "value": "0.15–0.2s en color, borde y fondo",
+        "purpose": "Hover de enlaces y botones. Con movimiento reducido se anula toda animación."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "movil",
+        "value": "480px"
+      },
+      {
+        "name": "pie",
+        "value": "760px"
+      },
+      {
+        "name": "rejilla",
+        "value": "900px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botón principal",
+      "kind": "button",
+      "refersTo": "boton",
+      "description": "La única acción principal de la pantalla: granate de mosto relleno, recto, en Caslon.",
+      "html": "<a class=\"ds-boton\" href=\"#\">Leer el cuaderno <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.25\" stroke-linecap=\"square\" aria-hidden=\"true\"><path d=\"M4 12h15M13 6l6 6-6 6\"/></svg></a>",
+      "css": ".ds-boton { display: inline-flex; align-items: center; gap: 0.6rem; font-family: var(--texto, 'Libre Caslon Text', Georgia, serif); font-size: 1.0625rem; line-height: 1.2; text-decoration: none; padding: 0.95rem 1.5rem; border: 1px solid var(--mosto, #6b1f3a); background: var(--mosto, #6b1f3a); color: var(--paspartu, #f4f3ee); border-radius: 0; cursor: pointer; transition: background 0.2s, border-color 0.2s; } .ds-boton svg { width: 1.1em; height: 1.1em; transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); } .ds-boton:hover { background: var(--mosto-hondo, #521629); border-color: var(--mosto-hondo, #521629); } .ds-boton:hover svg { transform: translateX(3px); } .ds-boton:focus-visible { outline: 2px solid var(--mosto, #6b1f3a); outline-offset: 3px; }"
+    },
+    {
+      "name": "Botón de línea",
+      "kind": "button",
+      "refersTo": "boton-linea",
+      "description": "Acción secundaria: borde del color del texto, granate al pasar.",
+      "html": "<a class=\"ds-boton-linea\" href=\"#\">Escríbenos</a>",
+      "css": ".ds-boton-linea { display: inline-flex; align-items: center; gap: 0.6rem; font-family: var(--texto, 'Libre Caslon Text', Georgia, serif); font-size: 1.0625rem; line-height: 1.2; text-decoration: none; padding: 0.95rem 1.5rem; border: 1px solid currentColor; background: transparent; color: var(--tinta, #1d211b); border-radius: 0; transition: border-color 0.2s, color 0.2s; } .ds-boton-linea:hover { border-color: var(--mosto, #6b1f3a); color: var(--mosto, #6b1f3a); } .ds-boton-linea:focus-visible { outline: 2px solid var(--mosto, #6b1f3a); outline-offset: 3px; }"
+    },
+    {
+      "name": "Navegación sobre verde",
+      "kind": "nav",
+      "refersTo": "cabecera",
+      "description": "Enlaces de la cabecera sobre el paño verde: filete dorado al pasar y en la página actual; idioma en cursiva.",
+      "html": "<nav class=\"ds-nav\"><a href=\"#\" aria-current=\"page\">Viñedos</a><a href=\"#\">Cuaderno</a><a href=\"#\">Contacto</a><a class=\"ds-nav__idioma\" href=\"#\">Euskaraz</a></nav>",
+      "css": ".ds-nav { display: flex; flex-wrap: wrap; gap: 0.25rem 1.75rem; background: var(--verde, #243020); color: var(--sobre-verde, #e8ecdf); padding: 1rem 1.5rem; font-family: var(--texto, 'Libre Caslon Text', Georgia, serif); } .ds-nav a { color: inherit; text-decoration: none; padding-block: 0.4rem; border-bottom: 1px solid transparent; transition: color 0.15s, border-color 0.15s; } .ds-nav a:hover { color: var(--paspartu, #f4f3ee); border-bottom-color: var(--oro, #b59a5a); } .ds-nav a[aria-current='page'] { border-bottom-color: var(--oro, #b59a5a); } .ds-nav a:focus-visible { outline: 2px solid var(--oro, #b59a5a); outline-offset: 3px; } .ds-nav__idioma { font-style: italic; color: var(--sobre-verde-2, #b9c2a8) !important; }"
+    },
+    {
+      "name": "Ficha descriptiva",
+      "kind": "card",
+      "refersTo": "ficha",
+      "description": "Lista de definiciones entre filetes, como la tabla de una lámina; términos en cursiva apagada.",
+      "html": "<dl class=\"ds-ficha\"><dt>Procedencia</dt><dd>Cirauqui / Zirauki, Navarra</dd><dt>Socios</dt><dd>Nerea, Julen e Iñaki</dd><dt>Primer vino</dt><dd>En botella</dd></dl>",
+      "css": ".ds-ficha { margin: 0; display: grid; grid-template-columns: minmax(7.5rem, auto) 1fr; border-top: 1px solid var(--tinta, #1d211b); font-family: var(--texto, 'Libre Caslon Text', Georgia, serif); color: var(--tinta, #1d211b); background: var(--papel, #eef0e8); } .ds-ficha dt, .ds-ficha dd { margin: 0; padding: 0.7rem 0; border-bottom: 1px solid var(--filete, #c9cdbf); } .ds-ficha dt { font-style: italic; color: var(--tinta-2, #4b5146); padding-right: 1.5rem; }"
+    },
+    {
+      "name": "Lámina montada",
+      "kind": "custom",
+      "refersTo": "lamina-monte",
+      "description": "Lámina sobre paspartú con filete dorado interior y pie en cursiva; aquí en su variante vacía «en preparación».",
+      "html": "<figure class=\"ds-lamina\"><div class=\"ds-lamina__monte\"><div class=\"ds-lamina__img\"><p>Lámina en preparación</p></div></div><figcaption>Garnacha. Lámina de J. Troncy para la Ampélographie de Viala y Vermorel (1901–1910).</figcaption></figure>",
+      "css": ".ds-lamina { margin: 0; max-width: 18rem; background: var(--verde, #243020); padding: 1.5rem; } .ds-lamina__monte { background: var(--paspartu, #f4f3ee); padding: clamp(0.8rem, 2.4vw, 1.7rem); } .ds-lamina__img { position: relative; aspect-ratio: 3 / 4; display: grid; place-items: center; } .ds-lamina__img::after { content: ''; position: absolute; inset: -7px; border: 1px solid var(--oro, #b59a5a); pointer-events: none; } .ds-lamina__img p { margin: 0; font-family: var(--texto, 'Libre Caslon Text', Georgia, serif); font-style: italic; color: var(--tinta-2, #4b5146); } .ds-lamina figcaption { font-family: var(--texto, 'Libre Caslon Text', Georgia, serif); font-style: italic; font-size: 0.875rem; line-height: 1.5; margin-top: 0.75rem; color: var(--sobre-verde-2, #b9c2a8); }"
+    },
+    {
+      "name": "Anotación de botánico",
+      "kind": "custom",
+      "refersTo": "lamina-monte",
+      "description": "Punto, línea guía que se dibuja al cargar y etiqueta en cursiva; al pasar, todo a granate y un óvalo rodea la parte.",
+      "html": "<svg class=\"ds-anot\" viewBox=\"0 0 320 200\" width=\"320\" height=\"200\"><g class=\"ds-anot__g\"><ellipse class=\"ds-anot__parte\" cx=\"90\" cy=\"110\" rx=\"60\" ry=\"45\" pathLength=\"1\"/><line x1=\"90\" y1=\"110\" x2=\"220\" y2=\"60\" pathLength=\"1\"/><circle cx=\"90\" cy=\"110\" r=\"4\"/><text x=\"226\" y=\"58\">Racimo</text></g></svg>",
+      "css": ".ds-anot { background: var(--paspartu, #f4f3ee); } .ds-anot__g { pointer-events: bounding-box; } .ds-anot line { stroke: var(--tinta, #1d211b); stroke-width: 1.2; stroke-dasharray: 1; stroke-dashoffset: 1; animation: ds-trazo 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards; transition: stroke 0.2s; } .ds-anot circle { fill: var(--paspartu, #f4f3ee); stroke: var(--tinta, #1d211b); stroke-width: 1; transition: fill 0.25s; } .ds-anot text { font-family: var(--texto, 'Libre Caslon Text', Georgia, serif); font-style: italic; font-size: 18px; fill: var(--tinta, #1d211b); transition: fill 0.2s; } .ds-anot__parte { fill: none; stroke: var(--mosto, #6b1f3a); stroke-width: 1.8; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1); } .ds-anot__g:hover .ds-anot__parte { stroke-dashoffset: 0; } .ds-anot__g:hover line { stroke: var(--mosto, #6b1f3a); } .ds-anot__g:hover circle { fill: var(--mosto, #6b1f3a); stroke: var(--mosto, #6b1f3a); } .ds-anot__g:hover text { fill: var(--mosto, #6b1f3a); } @keyframes ds-trazo { to { stroke-dashoffset: 0; } }"
+    },
+    {
+      "name": "Campo del panel",
+      "kind": "input",
+      "refersTo": "campo-panel",
+      "description": "Campo de formulario del panel: blanco, recto, borde de tinta apagada, foco granate.",
+      "html": "<label class=\"ds-campo\"><span>Título</span><input type=\"text\" placeholder=\"Título de la entrada\"/><small>Lo que verá la gente en Google.</small></label>",
+      "css": ".ds-campo { display: grid; gap: 0.4rem; font-family: var(--texto, 'Libre Caslon Text', Georgia, serif); color: var(--tinta, #1d211b); } .ds-campo span { font-weight: 700; font-size: 0.95rem; } .ds-campo small { color: var(--tinta-2, #4b5146); font-size: 0.875rem; } .ds-campo input { font: inherit; font-size: 1rem; color: var(--tinta, #1d211b); background: #fff; border: 1px solid var(--tinta-2, #4b5146); border-radius: 0; padding: 0.7rem 0.8rem; } .ds-campo input:focus { outline: 2px solid var(--mosto, #6b1f3a); outline-offset: 0; border-color: var(--mosto, #6b1f3a); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Láminas de ampelografía",
+    "overview": "La web es un tratado de ampelografía de su propia viña: láminas de hoja y racimo montadas en paspartú sobre paño verde de encuadernación, con su pie en cursiva, su procedencia y anotaciones de botánico trazadas a mano. Se alternan dos campos a todo el ancho: el paño verde (cabecera, portada, vino, cabeceras de página, pie) y el papel de lámina frío para leer. Todo se dice con una sola familia, Libre Caslon, en redonda y cursiva.\n\nTiene que leerse como bodega y viñedo al primer vistazo, nunca como marca de moda. Por eso no hay mayúsculas espaciadas, ni etiquetas, ni sellos: las etiquetas son cursivas en minúscula, como la letra de un botánico. La densidad es de libro: márgenes amplios, prosa a 66ch, ritmo vertical en múltiplos de una línea (1.5rem). El material es plano: papel, filete y tinta; sin sombras, sin degradados, sin esquinas redondeadas.\n\nLas láminas son de dominio público (J. Troncy para la Ampélographie de Viala y Vermorel, 1901–1910) e ilustran variedades de Navarra; siempre van acreditadas y nunca se presentan como las cepas del cliente.",
+    "keyCharacteristics": [
+      "Paño verde y papel de lámina alternados en bandas a todo el ancho.",
+      "Láminas montadas en paspartú con filete dorado interior y pie en cursiva con autoría.",
+      "Anotaciones de botánico: línea guía fina que se dibuja al cargar; al pasar, la parte se rodea en granate.",
+      "Libre Caslon Display para titulares, Libre Caslon Text para todo lo demás; cifras de estilo antiguo.",
+      "Granate de mosto solo para la acción principal y los estados activos.",
+      "Filetes de 1px como única estructura: fichas, índices, separadores."
+    ],
+    "rules": [
+      {
+        "name": "The Mosto Rule",
+        "body": "El granate es la acción principal y el estado activo; nunca fondo de sección ni decoración. Una pantalla tiene, como mucho, un botón granate relleno.",
+        "section": "colors"
+      },
+      {
+        "name": "The Gold Thread Rule",
+        "body": "El dorado es una línea de 1px, nunca un relleno ni un color de texto.",
+        "section": "colors"
+      },
+      {
+        "name": "The Botanist's Hand Rule",
+        "body": "Toda etiqueta es cursiva y en minúscula de frase. Nunca versalitas, nunca mayúsculas con espaciado, nunca letter-spacing positivo.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Family Rule",
+        "body": "Solo Libre Caslon. La letra de máquina de escribir pertenece únicamente a la insignia del logo; no es un rol tipográfico.",
+        "section": "typography"
+      },
+      {
+        "name": "The Mounted, Not Lifted Rule",
+        "body": "Nada flota: ni sombras, ni degradados, ni desenfoques. Si algo necesita destacar, se monta en paspartú o se separa con un filete.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do alternar bandas de paño verde y papel a todo el ancho; cabeceras de página y pie siempre en verde.",
+      "Do montar toda imagen importante en paspartú con filete dorado interior y pie en cursiva con autoría.",
+      "Do acreditar cada lámina histórica (J. Troncy, Viala y Vermorel, 1901–1910) y no presentarla nunca como la viña del cliente.",
+      "Do escribir etiquetas, metadatos y notas en cursiva Caslon Text en minúscula.",
+      "Do separar con filetes de 1px y medir el espacio vertical en múltiplos de 1.5rem.",
+      "Do dar al botón granate relleno solo la acción principal de la pantalla."
+    ],
+    "donts": [
+      "Don't usar mayúsculas espaciadas, versalitas, etiquetas, sellos ni ningún lenguaje de marca de moda.",
+      "Don't usar sombras, degradados ni esquinas redondeadas.",
+      "Don't usar Courier Prime fuera de la insignia del logo.",
+      "Don't usar el dorado como relleno o color de texto, ni el granate como fondo de sección.",
+      "Don't poner fotos de viñedo a sangre con serif dorada encima."
+    ]
+  }
+}

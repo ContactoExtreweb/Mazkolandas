@@ -1,0 +1,290 @@
+---
+// Mapa del tramo del Camino de Santiago entre Puente la Reina y Estella, que pasa
+// por Cirauqui. Los pueblos van en su sitio (longitud y latitud aproximadas, ~1 km);
+// ríos y curvas de nivel son un esquema. Marca el pueblo, no la parcela.
+interface Props {
+  lang: 'es' | 'eu'
+}
+const { lang } = Astro.props
+
+const C = {
+  es: {
+    titulo: 'El Camino de Santiago a su paso por Cirauqui',
+    pie: 'Esquema del tramo entre Puente la Reina y Estella: los pueblos están en su sitio; los ríos y las curvas de nivel, dibujados a mano alzada. Cirauqui: 42°40′ N · 1°53′ O · 493 m.',
+    pueblos: ['Puente la Reina', 'Mañeru', 'Cirauqui', 'Lorca', 'Villatuerta', 'Estella'],
+    pamplona: 'Pamplona',
+    arga: 'río Arga',
+    salado: 'río Salado',
+    calzada: 'calzada romana',
+  },
+  eu: {
+    titulo: 'Done Jakue bidea Ziraukitik igarotzean',
+    pie: 'Gares eta Lizarra arteko zatiaren eskema: herriak bere lekuan daude; ibaiak eta sestra-kurbak, eskuz marraztuak. Zirauki: 42°40′ I · 1°53′ M · 493 m.',
+    pueblos: ['Gares', 'Mañeru', 'Zirauki', 'Lorca', 'Villatuerta', 'Lizarra'],
+    pamplona: 'Iruña',
+    arga: 'Arga ibaia',
+    salado: 'Salado ibaia',
+    calzada: 'galtzada erromatarra',
+  },
+}[lang]
+
+// Proyección: 3926 px por grado de longitud (≈ 48 px/km a esta latitud)
+const PX_LON = 3926
+const PX_LAT = PX_LON / Math.cos((42.67 * Math.PI) / 180)
+const xy = (lat: number, lon: number) => [30 + (lon + 2.06) * PX_LON, 330 - (lat - 42.667) * PX_LAT].map(Math.round)
+const coords = [
+  [42.672, -1.8155], // Puente la Reina
+  [42.6697, -1.8628], // Mañeru
+  [42.6757, -1.8908], // Cirauqui
+  [42.6717, -1.9447], // Lorca
+  [42.6584, -1.9926], // Villatuerta
+  [42.6712, -2.0305], // Estella
+]
+const pts = coords.map(([lat, lon]) => xy(lat, lon))
+const pueblos = pts.map(([x, y], i) => ({ x, y, nombre: C.pueblos[i], aqui: i === 2 }))
+
+// Camino suave entre los pueblos (Catmull-Rom → Bézier), de este a oeste como el peregrino
+const ruta = pts.reduce((d, p, i) => {
+  if (i === 0) return `M ${p[0]} ${p[1]}`
+  const p0 = pts[i - 2] ?? pts[i - 1]
+  const p1 = pts[i - 1]
+  const p3 = pts[i + 1] ?? p
+  const c1 = [p1[0] + (p[0] - p0[0]) / 6, p1[1] + (p[1] - p0[1]) / 6]
+  const c2 = [p[0] - (p3[0] - p1[0]) / 6, p[1] - (p3[1] - p1[1]) / 6]
+  return `${d} C ${c1.map(Math.round)} ${c2.map(Math.round)} ${p}`
+}, '')
+
+const { x: cx, y: cy } = pueblos[2]
+// Cirauqui está en lo alto de un cerro: curvas cerradas alrededor del pueblo
+const cerro = [1, 2, 3, 4].map((k) => {
+  const rx = 24 + k * 30
+  const ry = 16 + k * 21
+  return `M ${cx - rx} ${cy + 4} C ${cx - rx} ${cy - ry * 1.1}, ${cx + rx * 0.9} ${cy - ry * 1.25}, ${cx + rx} ${cy - 2} S ${cx - rx * 0.6} ${cy + ry * 1.2}, ${cx - rx} ${cy + 4} Z`
+})
+---
+
+<figure class="camino" data-revelar>
+  <figcaption class="camino__titulo">{C.titulo}</figcaption>
+  <svg class="camino__svg" viewBox="0 0 1200 560" preserveAspectRatio="xMidYMid slice" role="img" aria-label={`${C.titulo}: ${C.pueblos.join(', ')}`}>
+    <!-- Relieve (decorativo) -->
+    <g class="relieve">
+      <path d="M -20 120 C 180 70, 330 150, 520 110 S 860 40, 1220 90" />
+      <path d="M -20 190 C 160 140, 300 220, 470 180 S 820 120, 1220 170" />
+      <path d="M -20 470 C 220 420, 380 500, 600 450 S 920 400, 1220 470" />
+      <path d="M -20 530 C 260 490, 420 560, 640 515 S 960 470, 1220 540" />
+      {cerro.map((d) => <path d={d} />)}
+    </g>
+
+    <!-- Ríos -->
+    <g class="rio">
+      <path d="M 1110 -10 C 1060 120, 1020 190, 985 290 S 950 430, 1000 570" />
+      <path d="M 590 -10 C 580 110, 545 210, 550 300 S 580 450, 545 570" />
+    </g>
+    <text class="rio__nombre" x="1012" y="420">{C.arga}</text>
+    <text class="rio__nombre" x="566" y="470">{C.salado}</text>
+
+    <!-- Hacia Pamplona -->
+    <path class="ruta ruta--lejos" d={`M ${pts[0][0]} ${pts[0][1]} L 1150 120`} />
+    <text class="pamplona" x="1150" y="100" text-anchor="end">{C.pamplona} ↗</text>
+
+    <!-- El Camino -->
+    <path class="ruta" d={ruta} pathLength="1" />
+    <text class="calzada" x={cx - 92} y={cy - 24}>{C.calzada}</text>
+
+    {pueblos.map((p, i) => (
+      <g class:list={['pueblo', { 'pueblo--aqui': p.aqui }]} style={`--i:${i}`}>
+        {p.aqui && <circle class="pueblo__halo" cx={p.x} cy={p.y} r="16" />}
+        <circle cx={p.x} cy={p.y} r={p.aqui ? 6 : 4.5} />
+        <text x={p.x} y={p.aqui ? p.y + 44 : p.y + 30} text-anchor="middle">{p.nombre}</text>
+      </g>
+    ))}
+
+    <!-- Norte y escala -->
+    <g class="rosa" transform="translate(70 70)">
+      <path d="M 0 26 L 0 -26 M -7 -14 L 0 -26 L 7 -14" />
+      <text y="-34" text-anchor="middle">N</text>
+    </g>
+    <g class="escala" transform="translate(70 515)">
+      <path d="M 0 -6 V 0 H 240 V -6 M 120 0 V -4" />
+      <text x="0" y="22">0</text>
+      <text x="240" y="22" text-anchor="middle">5 km</text>
+    </g>
+  </svg>
+  <p class="camino__pie">{C.pie}</p>
+</figure>
+
+<style>
+  .camino {
+    margin: 0;
+    position: relative;
+    border-top: 1px solid var(--oro);
+    padding-top: 1.25rem;
+  }
+  .camino__titulo {
+    font-family: var(--titular);
+    font-size: clamp(1.4rem, 1.2vw + 1rem, 2rem);
+    line-height: 1.15;
+    color: var(--paspartu);
+    max-width: 22ch;
+  }
+  .camino__svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1200 / 560;
+    margin-top: 0.5rem;
+    overflow: hidden;
+  }
+  /* En el móvil se recorta a los lados (queda el centro, con Cirauqui) para que se lea */
+  @media (max-width: 640px) {
+    .camino__svg {
+      height: 24rem;
+      aspect-ratio: auto;
+    }
+  }
+  .camino__pie {
+    font-style: italic;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--sobre-verde-2);
+    margin: 0.75rem 0 0;
+    max-width: 60ch;
+  }
+
+  text {
+    font-family: var(--texto);
+    font-size: 17px;
+    fill: var(--sobre-verde);
+  }
+  .relieve path {
+    fill: none;
+    stroke: var(--sobre-verde-2);
+    stroke-width: 1;
+    opacity: 0.22;
+  }
+  .rio path {
+    fill: none;
+    stroke: var(--sobre-verde-2);
+    stroke-width: 2;
+    opacity: 0.55;
+  }
+  .rio__nombre,
+  .calzada,
+  .pamplona {
+    font-style: italic;
+    font-size: 15px;
+    fill: var(--sobre-verde-2);
+  }
+  .ruta {
+    fill: none;
+    stroke: var(--oro);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+  .ruta--lejos {
+    stroke-width: 1.5;
+    stroke-dasharray: 2 7;
+    stroke-dashoffset: 0;
+    opacity: 0.8;
+  }
+  .pueblo circle {
+    fill: var(--paspartu);
+  }
+  .pueblo text {
+    font-style: italic;
+  }
+  .pueblo--aqui text {
+    font-family: var(--titular);
+    font-style: normal;
+    font-size: 30px;
+    fill: var(--paspartu);
+  }
+  /* Móvil: el mapa se ve a ~70 %, así que la letra crece y sobra lo que queda fuera */
+  @media (max-width: 640px) {
+    text {
+      font-size: 25px;
+    }
+    .rio__nombre,
+    .calzada {
+      font-size: 21px;
+    }
+    .pueblo--aqui text {
+      font-size: 36px;
+    }
+    .rosa,
+    .escala,
+    .pamplona,
+    .ruta--lejos {
+      display: none;
+    }
+  }
+  .pueblo__halo {
+    fill: none !important;
+    stroke: var(--oro);
+    stroke-width: 1.5;
+  }
+  .rosa path,
+  .escala path {
+    fill: none;
+    stroke: var(--sobre-verde-2);
+    stroke-width: 1.5;
+  }
+  .rosa text,
+  .escala text {
+    font-family: var(--insignia);
+    font-size: 14px;
+    fill: var(--sobre-verde-2);
+  }
+
+  /* Al verse: el Camino se traza de este a oeste y los pueblos aparecen a su paso */
+  .pueblo,
+  .calzada {
+    opacity: 0;
+  }
+  :global(.camino.is-visible) .ruta:not(.ruta--lejos) {
+    animation: trazar 2.6s var(--ease) 0.2s forwards;
+  }
+  :global(.camino.is-visible) .pueblo {
+    animation: aparecer 0.6s var(--ease) forwards;
+    animation-delay: calc(0.25s + var(--i) * 0.38s);
+  }
+  :global(.camino.is-visible) .calzada {
+    animation: aparecer 0.8s var(--ease) 1.6s forwards;
+  }
+  :global(.camino.is-visible) .pueblo__halo {
+    animation: halo 2.8s ease-out 1.6s infinite;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  @keyframes trazar {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes aparecer {
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes halo {
+    0% {
+      transform: scale(0.6);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(2.4);
+      opacity: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ruta {
+      stroke-dashoffset: 0;
+    }
+    .pueblo,
+    .calzada {
+      opacity: 1;
+    }
+  }
+</style>

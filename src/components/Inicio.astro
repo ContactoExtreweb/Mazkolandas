@@ -1,0 +1,522 @@
+---
+// Home en castellano o euskera. La página (index.astro / eu/index.astro)
+// trae las entradas y fija la caché; aquí solo se pinta.
+import Base from '../layouts/Base.astro'
+import Lamina from './Lamina.astro'
+import Registro from './Registro.astro'
+import Flecha from './Flecha.astro'
+import Botella from './Botella.astro'
+import Suscripcion from './Suscripcion.astro'
+import Marquesina from './Marquesina.astro'
+import Camino from './Camino.astro'
+import Ciclo from './Ciclo.astro'
+import { T, RUTAS, EMAIL } from '../i18n.js'
+
+// El visor de la demo (botellas de otras marcas) solo se enlaza mientras exista:
+// al borrar src/pages/demo/ antes de publicar, el botón desaparece solo.
+const hayDemo = Object.keys(import.meta.glob('../pages/demo/botella.astro')).length > 0
+
+interface Props {
+  lang: 'es' | 'eu'
+  posts: any[]
+  vino: any // ver src/lib/vino.js
+}
+const { lang, posts, vino: VINO } = Astro.props
+const t = T[lang]
+const r = RUTAS[lang]
+
+const C = {
+  es: {
+    title: 'Viñedos y vino en Navarra · Cirauqui | Mazkolandas Viñedos',
+    description:
+      'Mazkolandas es el proyecto de viñedos y vino de Nerea, Julen e Iñaki en Cirauqui (Navarra), en el Camino de Santiago. Nuestro primer vino ya está en botella.',
+    h1: 'Viñedos y vino en Cirauqui, Navarra',
+    entrada:
+      'Somos Nerea, Julen e Iñaki, tres amigos que cultivan viña en Cirauqui, entre Puente la Reina y Estella. Nuestro primer vino ya está en botella; solo le falta la etiqueta.',
+    garnacha: {
+      alt: 'Lámina botánica de una hoja y un racimo de garnacha',
+      pie: 'Garnacha. Lámina de J. Troncy para la Ampélographie de Viala y Vermorel (1901–1910).',
+    },
+    quienes: 'Quiénes somos',
+    carta: [
+      'Mazkolandas es un proyecto nuevo y pequeño, hecho entre tres. Antes que socios somos compañeros y amigos, y un día decidimos apostar juntos por la viña y por un vino propio en Cirauqui.',
+      'Somos uno de los proyectos de Espacio Alpha, y lo que pasa en la viña (la poda, el envero, la vendimia, la bodega) lo contamos en nuestro cuaderno de campo, en castellano y en euskera.',
+    ],
+    firma: 'Nerea, Julen e Iñaki',
+    ficha: [
+      ['Proyecto', 'Mazkolandas Viñedos'],
+      ['Procedencia', 'Cirauqui / Zirauki, Navarra'],
+      ['Socios', 'Nerea, Julen e Iñaki'],
+      ['Programa', 'Espacio Alpha'],
+      ['Primer vino', 'En botella'],
+    ],
+    vino: 'Nuestro vino',
+    vinoTexto:
+      'Ya está embotellado. En cuanto tenga etiqueta lo presentaremos aquí: su nombre, su uva, su añada y dónde encontrarlo. Si quieres saberlo antes que nadie, escríbenos.',
+    porAnunciar: 'Por anunciar',
+    campos: { tipo: 'Tipo', uva: 'Uva', anada: 'Añada', origen: 'Origen' },
+    origen: 'Cirauqui, Navarra',
+    pieMuestra: 'Botella de muestra: la de verdad, con su etiqueta, muy pronto. Gírala con el dedo o el ratón.',
+    pieListo: 'Gírala con el dedo o el ratón.',
+    verEn3D: 'Verla a pantalla completa',
+    ano: 'El año en la viña',
+    anoTexto:
+      'Lo que pasa en una viña de la zona media de Navarra a lo largo del año, con fechas orientativas. La aguja marca el día de hoy; en el cuaderno te contamos cómo va la nuestra.',
+    vina: 'La viña, en Cirauqui',
+    vinaTexto:
+      'Cirauqui es un pueblo de la Merindad de Estella, en lo alto de un cerro y a unos 30 kilómetros de Pamplona. Por sus calles pasa el Camino de Santiago, y a su alrededor crecen nuestras cepas.',
+    vinaFicha: [
+      ['Merindad', 'Estella'],
+      ['Pamplona', 'a unos 30 km'],
+      ['Camino de Santiago', 'pasa por el pueblo'],
+    ],
+    vinaEnlace: 'Conocer los viñedos',
+    tempranillo: {
+      alt: 'Lámina botánica de un racimo de tempranillo con sus hojas',
+      pie: 'Tempranillo, junto a la garnacha una de las uvas más cultivadas en Navarra. Lámina de J. Troncy (1901–1910).',
+    },
+    cuaderno: 'Cuaderno de campo',
+    cuadernoTexto: 'Lo que pasa en la viña, contado mientras pasa.',
+    marquesina: 'Viñedos de Cirauqui · Camino de Santiago · Navarra',
+  },
+  eu: {
+    title: 'Mahastiak eta ardoa Nafarroan · Zirauki | Mazkolandas Viñedos',
+    description:
+      'Mazkolandas Nerea, Julen eta Iñakiren mahasti eta ardo proiektua da, Ziraukin (Nafarroa), Done Jakue bidean. Gure lehen ardoa botilan dago jada.',
+    h1: 'Mahastiak eta ardoa Ziraukin, Nafarroan',
+    entrada:
+      'Nerea, Julen eta Iñaki gara, Ziraukin mahastiak lantzen ditugun hiru lagun, Gares eta Lizarra artean. Gure lehen ardoa botilan dago dagoeneko; etiketa baino ez zaio falta.',
+    garnacha: {
+      alt: 'Garnatxa mahats-mordo eta hosto baten irudi botanikoa',
+      pie: 'Garnatxa. J. Troncyren irudia, Viala eta Vermorelen Ampélographie lanerako (1901–1910).',
+    },
+    quienes: 'Nor gara',
+    carta: [
+      'Mazkolandas proiektu berri eta txikia da, hiruron artean egina. Bazkide izan aurretik lankide eta lagunak gara, eta egun batean elkarrekin apustu egin genuen mahastiaren eta Ziraukiko ardo propio baten alde.',
+      'Espacio Alpha-ren proiektuetako bat gara, eta mahastian gertatzen dena (inausketa, koloreztatzea, mahats-bilketa, upategia) gure landa-koadernoan kontatzen dugu, gaztelaniaz eta euskaraz.',
+    ],
+    firma: 'Nerea, Julen eta Iñaki',
+    ficha: [
+      ['Proiektua', 'Mazkolandas Viñedos'],
+      ['Jatorria', 'Zirauki / Cirauqui, Nafarroa'],
+      ['Bazkideak', 'Nerea, Julen eta Iñaki'],
+      ['Programa', 'Espacio Alpha'],
+      ['Lehen ardoa', 'Botilan'],
+    ],
+    vino: 'Gure ardoa',
+    vinoTexto:
+      'Botilan dago jada. Etiketa duenean hemen aurkeztuko dugu: izena, mahatsa, uzta eta non aurkitu. Inor baino lehen jakin nahi baduzu, idatz iezaguzu.',
+    porAnunciar: 'Iragartzeko',
+    campos: { tipo: 'Mota', uva: 'Mahatsa', anada: 'Uzta', origen: 'Jatorria' },
+    origen: 'Zirauki, Nafarroa',
+    pieMuestra: 'Erakusteko botila: benetakoa, bere etiketarekin, laster. Biratu hatzarekin edo saguarekin.',
+    pieListo: 'Biratu hatzarekin edo saguarekin.',
+    verEn3D: 'Pantaila osoan ikusi',
+    ano: 'Urtea mahastian',
+    anoTexto:
+      'Nafarroa erdialdeko mahasti batean urtean zehar gertatzen dena, gutxi gorabeherako datekin. Orratzak gaurko eguna markatzen du; gurea nola doan koadernoan kontatzen dizugu.',
+    vina: 'Mahastia, Ziraukin',
+    vinaTexto:
+      'Zirauki Lizarrako merindadeko herri bat da, muino baten gainean eta Iruñetik 30 bat kilometrora. Bere kaleetatik igarotzen da Done Jakue bidea, eta inguruan hazten dira gure mahatsondoak.',
+    vinaFicha: [
+      ['Merindadea', 'Lizarra'],
+      ['Iruña', '30 km inguru'],
+      ['Done Jakue bidea', 'herritik igarotzen da'],
+    ],
+    vinaEnlace: 'Mahastiak ezagutu',
+    tempranillo: {
+      alt: 'Tempranillo mahats-mordo baten irudi botanikoa, hostoekin',
+      pie: 'Tempranilloa, garnatxarekin batera Nafarroan gehien lantzen diren mahatsetako bat. J. Troncyren irudia (1901–1910).',
+    },
+    cuaderno: 'Landa-koadernoa',
+    cuadernoTexto: 'Mahastian gertatzen dena, gertatu ahala kontatua.',
+    marquesina: 'Ziraukiko mahastiak · Done Jakue bidea · Nafarroa',
+  },
+}[lang]
+
+const vino = VINO[lang]
+const ficha = [
+  [C.campos.tipo, vino.tipo],
+  [C.campos.uva, vino.uva],
+  [C.campos.anada, vino.anada],
+  [C.campos.origen, C.origen],
+]
+const SITE = Astro.site ?? new URL('https://mazkolandas.es')
+const schemaVino = VINO.listo
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: vino.nombre,
+      category: vino.tipo || 'Vino',
+      description: vino.nota || vino.elaboracion,
+      image: VINO.botella.etiqueta ? new URL(VINO.botella.etiqueta, SITE).href : undefined,
+      brand: { '@id': new URL('/#bodega', SITE).href },
+      countryOfOrigin: 'ES',
+    }
+  : null
+
+// Anotaciones de botánico sobre la lámina de la garnacha (píxeles de la imagen 817×1177)
+const notas = [
+  { x: 480, y: 245, lx: 632, ly: 160, tx: 642, ty: 168, cx: 380, cy: 300, rx: 262, ry: 222, texto: t.partes.hoja },
+  { x: 188, y: 516, lx: 104, ly: 548, tx: 20, ty: 582, cx: 222, cy: 497, rx: 92, ry: 54, texto: t.partes.sarmiento },
+  { x: 405, y: 862, lx: 585, ly: 930, tx: 595, ty: 944, cx: 330, cy: 770, rx: 215, ry: 268, texto: t.partes.racimo },
+]
+---
+
+<Base title={C.title} description={C.description} lang={lang} otra={RUTAS[lang === 'es' ? 'eu' : 'es'].inicio} schema={schemaVino}>
+  <!-- Portada: la lámina de la garnacha montada sobre el paño verde -->
+  <section class="verde portada">
+    <div class="marco portada__rejilla">
+      <div class="portada__texto">
+        <h1>{C.h1}</h1>
+        <p class="portada__entrada">{C.entrada}</p>
+        <div class="acciones">
+          <a class="boton" href={r.cuaderno}>{t.leerCuaderno}<Flecha /></a>
+          <a class="boton boton--linea" href={`mailto:${EMAIL}`}>{t.escribenos}</a>
+        </div>
+        <p class="portada__nombre">Mazkolandas <em>Viñedos</em></p>
+      </div>
+      <Lamina
+        class="portada__lamina"
+        src="/laminas/garnacha.jpg"
+        alt={C.garnacha.alt}
+        ancho={817}
+        alto={1177}
+        pie={C.garnacha.pie}
+        notas={notas}
+        prioridad
+      />
+    </div>
+  </section>
+
+  <Marquesina texto={C.marquesina} />
+
+  <!-- Quiénes somos: una carta y su ficha -->
+  <section class="marco quienes">
+    <div class="quienes__rejilla">
+      <div class="quienes__carta">
+        <h2 class="titulo-seccion">{C.quienes}</h2>
+        {C.carta.map((p) => <p>{p}</p>)}
+        <p class="quienes__firma">{C.firma}</p>
+      </div>
+      <dl class="ficha quienes__ficha">
+        {C.ficha.map(([k, v]) => (
+          <>
+            <dt>{k}</dt>
+            <dd>{v}</dd>
+          </>
+        ))}
+      </dl>
+    </div>
+  </section>
+
+  <!-- El vino: plató oscuro a sangre; con el scroll la botella llega desde el fondo,
+       muy inclinada, y se endereza. Los datos salen del panel (src/lib/vino.js) -->
+  <section class="verde vino" id="vino">
+    <div class="vino__plato">
+      <Botella lang={lang} botella={VINO.botella} plato />
+      <div class="marco vino__rejilla">
+        <div class="vino__texto">
+          <h2 class="titulo-seccion">{VINO.listo ? vino.nombre : C.vino}</h2>
+          {VINO.listo ? (
+            <>
+              {vino.elaboracion && <p>{vino.elaboracion}</p>}
+              {vino.nota && <p class="vino__nota">{vino.nota}</p>}
+            </>
+          ) : (
+            <p>{C.vinoTexto}</p>
+          )}
+          <dl class="ficha vino__ficha">
+            {ficha.map(([k, v]) => (
+              <>
+                <dt>{k}</dt>
+                <dd class:list={{ vino__pendiente: !v }}>{v || C.porAnunciar}</dd>
+              </>
+            ))}
+          </dl>
+          <div class="acciones">
+            {VINO.listo && vino.comprar ? (
+              <a class="boton" href={vino.comprar.url}>{vino.comprar.texto}<Flecha /></a>
+            ) : (
+              <a class="boton boton--linea" href={`mailto:${EMAIL}`}>{t.escribenos}<Flecha /></a>
+            )}
+            {hayDemo && (
+              <a class="boton boton--linea" href="/demo/botella/" data-astro-reload>{C.verEn3D}<Flecha /></a>
+            )}
+          </div>
+          <p class="nota vino__pie">{VINO.listo ? C.pieListo : C.pieMuestra}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- El año en la viña: rueda de las fases con el día de hoy -->
+  <section class="marco ano">
+    <h2 class="titulo-seccion">{C.ano}</h2>
+    <p class="ano__intro">{C.anoTexto}</p>
+    <Ciclo lang={lang} />
+  </section>
+
+  <!-- La viña: el lugar, con la lámina del tempranillo y el Camino -->
+  <section class="verde vina">
+    <div class="marco">
+      <div class="vina__rejilla">
+        <div class="vina__texto">
+          <h2 class="titulo-seccion">{C.vina}</h2>
+          <p>{C.vinaTexto}</p>
+          <dl class="ficha">
+            {C.vinaFicha.map(([k, v]) => (
+              <>
+                <dt>{k}</dt>
+                <dd>{v}</dd>
+              </>
+            ))}
+          </dl>
+          <a class="boton boton--linea vina__enlace" href={r.vinedos}>{C.vinaEnlace}<Flecha /></a>
+        </div>
+        <Lamina
+          class="vina__lamina"
+          src="/laminas/tempranillo.jpg"
+          alt={C.tempranillo.alt}
+          ancho={819}
+          alto={1165}
+          pie={C.tempranillo.pie}
+        />
+      </div>
+      <Camino lang={lang} />
+    </div>
+  </section>
+
+  <!-- Cuaderno: últimas entradas -->
+  <section class="marco cuaderno">
+    <h2 class="titulo-seccion">{C.cuaderno}</h2>
+    <p class="cuaderno__intro">{C.cuadernoTexto}</p>
+    {posts.length === 0 ? (
+      <p class="nota cuaderno__vacio">{t.sinEntradas}</p>
+    ) : (
+      <>
+        <Registro posts={posts.slice(0, 4)} lang={lang} />
+        <a class="boton boton--linea cuaderno__todas" href={r.cuaderno}>{t.todas}<Flecha /></a>
+      </>
+    )}
+  </section>
+
+  <!-- Formulario de lista de espera -->
+  <Suscripcion lang={lang} />
+</Base>
+
+<style>
+  /* ── Portada ── */
+  .portada {
+    padding-block: clamp(1.5rem, 4vh, 3rem) calc(var(--linea) * 3);
+  }
+  .portada__rejilla {
+    display: grid;
+    gap: calc(var(--linea) * 2) 5rem;
+    align-items: center;
+  }
+  @media (min-width: 900px) {
+    .portada__rejilla {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+    /* La lámina va a la izquierda en escritorio; en el móvil, después del titular */
+    .portada__rejilla :global(.portada__lamina) {
+      order: -1;
+      width: min(34rem, calc((100svh - 12rem) * 0.66));
+    }
+  }
+  .portada__texto {
+    max-width: 38rem;
+  }
+  .portada h1 {
+    font-size: clamp(2.6rem, 4.4vw + 0.8rem, 5.25rem);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    margin-bottom: calc(var(--linea) * 1.25);
+    color: var(--paspartu);
+  }
+  .portada__entrada {
+    font-size: 1.1875rem;
+    line-height: 1.65;
+    color: var(--sobre-verde);
+    max-width: 34rem;
+    margin-bottom: calc(var(--linea) * 1.5);
+  }
+  .portada__nombre {
+    font-family: var(--titular);
+    font-size: clamp(1.6rem, 1.2vw + 1.1rem, 2.25rem);
+    line-height: 1.1;
+    color: var(--sobre-verde);
+    margin: calc(var(--linea) * 2.5) 0 0;
+    padding-top: calc(var(--linea) * 1.25);
+    border-top: 1px solid var(--oro);
+    max-width: 24rem;
+  }
+  .portada__nombre em {
+    font-family: var(--texto);
+    color: var(--sobre-verde-2);
+  }
+  @media (max-width: 899px) {
+    .portada__rejilla :global(.portada__lamina) {
+      max-width: 30rem;
+    }
+  }
+
+  /* ── Quiénes somos ── */
+  .quienes {
+    padding-block: calc(var(--linea) * 5) calc(var(--linea) * 4);
+  }
+  .quienes__rejilla {
+    display: grid;
+    gap: calc(var(--linea) * 2.5) 6rem;
+    align-items: end;
+  }
+  @media (min-width: 900px) {
+    .quienes__rejilla {
+      grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    }
+  }
+  .quienes__carta {
+    max-width: 36rem;
+    font-size: 1.125rem;
+  }
+  .quienes__firma {
+    font-style: italic;
+    color: var(--mosto);
+    margin: 0;
+  }
+
+  /* ── El vino: plató ── */
+  .vino {
+    background: var(--plato);
+  }
+  /* Móvil: el texto y debajo el plató */
+  .vino__plato {
+    display: flex;
+    flex-direction: column;
+  }
+  .vino__plato :global(.botella--plato) {
+    order: 1;
+    height: min(84svh, 46rem);
+  }
+  .vino__rejilla {
+    padding-block: calc(var(--linea) * 4) var(--linea);
+  }
+  /* Escritorio: el plató ocupa toda la pantalla y el texto flota a la izquierda */
+  @media (min-width: 900px) {
+    .vino__plato {
+      position: relative;
+      display: grid;
+      align-items: center;
+      min-height: 100svh;
+    }
+    .vino__plato :global(.botella--plato) {
+      position: absolute;
+      inset: 0;
+      height: auto;
+    }
+    .vino__rejilla {
+      position: relative;
+      pointer-events: none; /* se arrastra la botella por todo el plató */
+      padding-block: calc(var(--linea) * 3);
+    }
+    .vino__texto {
+      pointer-events: auto;
+    }
+  }
+  /* Y se queda fija mientras la botella llega desde el fondo */
+  @media (min-width: 900px) and (prefers-reduced-motion: no-preference) {
+    .vino {
+      height: 240vh;
+    }
+    .vino__plato {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      min-height: 0;
+    }
+  }
+  .vino h2 {
+    color: var(--paspartu);
+  }
+  .vino__texto {
+    max-width: 30rem;
+  }
+  .vino__texto > p:not(.vino__pie) {
+    font-size: 1.1875rem;
+  }
+  .vino__nota {
+    font-style: italic;
+  }
+  .vino__ficha {
+    margin-bottom: calc(var(--linea) * 1.5);
+  }
+  .vino__pie {
+    margin: calc(var(--linea) * 1.25) 0 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  .vino__pendiente {
+    font-style: italic;
+    color: var(--sobre-verde-2);
+  }
+
+  /* ── El año en la viña ── */
+  .ano {
+    padding-block: calc(var(--linea) * 5) calc(var(--linea) * 4);
+  }
+  .ano__intro {
+    font-size: 1.125rem;
+    color: var(--tinta-2);
+    max-width: 44rem;
+    margin-bottom: calc(var(--linea) * 2.5);
+  }
+
+  /* ── La viña ── */
+  .vina {
+    padding-block: calc(var(--linea) * 4);
+  }
+  .vina :global(.camino) {
+    margin-top: calc(var(--linea) * 4);
+  }
+  .vina__rejilla {
+    display: grid;
+    gap: calc(var(--linea) * 2.5) 6rem;
+    align-items: center;
+  }
+  @media (min-width: 900px) {
+    .vina__rejilla {
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    }
+  }
+  .vina__texto {
+    max-width: 36rem;
+  }
+  .vina__texto > p {
+    font-size: 1.125rem;
+  }
+  .vina__enlace {
+    margin-top: calc(var(--linea) * 1.5);
+  }
+  .vina__rejilla :global(.vina__lamina) {
+    max-width: 24rem;
+    justify-self: center;
+  }
+
+  /* ── Cuaderno ── */
+  .cuaderno {
+    padding-block: calc(var(--linea) * 3) 0;
+  }
+  .cuaderno__intro {
+    font-size: 1.125rem;
+    color: var(--tinta-2);
+    font-style: italic;
+  }
+  .cuaderno__vacio {
+    padding: calc(var(--linea) * 1.5) 0;
+    border-block: 1px solid var(--filete);
+  }
+  .cuaderno__todas {
+    margin-top: calc(var(--linea) * 1.5);
+  }
+</style>

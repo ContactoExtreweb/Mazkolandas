@@ -1,0 +1,13 @@
+---
+import Entrada from '../../../components/Entrada.astro'
+import { getPost } from '../../../lib/posts.js'
+import { cachearEnCDN } from '../../../lib/cache.js'
+
+export const prerender = false
+
+const post = await getPost(Astro.params.slug ?? '', 'eu')
+if (post) cachearEnCDN(Astro.response.headers)
+else Astro.response.status = 404
+---
+
+<Entrada lang="eu" post={post} />

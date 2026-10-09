@@ -1,0 +1,112 @@
+---
+// Textos legales (solo castellano). Los [pendiente: …] son datos que tiene
+// que facilitar el cliente antes de publicar la web.
+import Base from '../layouts/Base.astro'
+import { EMAIL } from '../i18n.js'
+import { aHTML } from '../lib/texto.js'
+
+interface Props {
+  tipo: 'aviso' | 'privacidad' | 'cookies'
+}
+const { tipo } = Astro.props
+
+const titular = `**Titular:** [pendiente: nombre o razón social]
+**NIF:** [pendiente]
+**Domicilio:** [pendiente], Cirauqui (Navarra)
+**Correo:** ${EMAIL}`
+
+const P = {
+  aviso: {
+    h1: 'Aviso legal',
+    texto: `En cumplimiento de la Ley 34/2002, de servicios de la sociedad de la información y de comercio electrónico (LSSI-CE), estos son los datos del titular de esta web:
+
+${titular}
+
+## Objeto
+
+Esta web presenta el proyecto Mazkolandas Viñedos y publica noticias sobre su viña y su vino. No vende productos ni servicios en línea.
+
+## Propiedad intelectual
+
+Los textos, fotografías y marcas de esta web pertenecen a Mazkolandas Viñedos o se usan con permiso de sus autores. No se pueden reproducir sin autorización.
+
+## Responsabilidad
+
+Cuidamos que la información sea correcta, pero no respondemos de los errores que pueda contener ni del contenido de las webs externas a las que enlazamos.
+
+## Legislación aplicable
+
+Esta web se rige por la legislación española.`,
+  },
+  privacidad: {
+    h1: 'Política de privacidad',
+    texto: `${titular}
+
+## Qué datos tratamos
+
+Esta web no pide registro y no usa herramientas de analítica ni de publicidad. Solo tratamos los datos que nos das tú:
+
+- **Formulario de contacto o correo electrónico:** tu nombre, tu dirección de correo y lo que nos cuentes.
+- **Libro de registro (lista de espera del primer vino):** tu dirección de correo.
+
+## Para qué y durante cuánto tiempo
+
+- **Contacto:** para responderte. Guardamos el mensaje mientras haga falta para atender lo que nos pidas y después lo borramos.
+- **Libro de registro:** para avisarte por correo cuando nuestro primer vino esté a la venta. Guardamos tu dirección hasta que nos pidas darte de baja, que puedes hacer en cualquier momento contestando a cualquiera de nuestros correos o escribiendo a ${EMAIL}.
+
+No cedemos tus datos a nadie salvo obligación legal. Se guardan en nuestra base de datos (Supabase), alojada en la Unión Europea, y solo pueden verlos los socios de Mazkolandas.
+
+## Base legal
+
+Tu consentimiento: al enviarnos el formulario o escribirnos, y al marcar la casilla del libro de registro (art. 6.1.a del Reglamento General de Protección de Datos). Puedes retirarlo cuando quieras.
+
+## Tus derechos
+
+Puedes pedir acceso, rectificación, supresión, oposición, limitación y portabilidad de tus datos escribiendo a ${EMAIL}. Si crees que no los hemos tratado bien, puedes reclamar ante la Agencia Española de Protección de Datos ([aepd.es](https://www.aepd.es)).`,
+  },
+  cookies: {
+    h1: 'Política de cookies',
+    texto: `Esta web **no usa cookies** de análisis, de publicidad ni de terceros. Las fuentes tipográficas se sirven desde nuestro propio servidor.
+
+## Lo que se guarda en tu navegador
+
+- **Edad legal:** al confirmar que tienes la edad legal para beber alcohol, la web lo recuerda en tu navegador (almacenamiento local) para no volver a preguntártelo. Es técnico y no hace falta consentimiento.
+- **Panel de administración:** el panel que usan los socios para publicar guarda la sesión en el navegador. Solo afecta a quien inicia sesión en el panel.
+
+Puedes borrar estos datos cuando quieras desde la configuración de tu navegador.
+
+## Enlaces a otras webs
+
+Si sigues un enlace a Instagram u otra web, esa web aplica su propia política de cookies.`,
+  },
+}[tipo]
+---
+
+<Base title={`${P.h1} | Mazkolandas`} description={`${P.h1} de Mazkolandas Viñedos.`}>
+  <header class="verde legal__cabeza">
+    <div class="marco"><h1>{P.h1}</h1></div>
+  </header>
+  <article class="marco legal">
+    <div class="prosa" set:html={aHTML(P.texto).replace(/\[pendiente[^\]]*\]/g, '<mark>$&</mark>')} />
+  </article>
+</Base>
+
+<style>
+  .legal__cabeza {
+    padding-block: calc(var(--linea) * 2) calc(var(--linea) * 2.5);
+  }
+  .legal__cabeza h1 {
+    font-size: clamp(2.2rem, 3vw + 1rem, 3.75rem);
+    color: var(--paspartu);
+  }
+  .legal {
+    padding-top: calc(var(--linea) * 3);
+    font-size: 1.0625rem;
+  }
+  .legal :global(mark) {
+    background: var(--mosto);
+    color: var(--paspartu);
+    font-style: italic;
+    padding: 0 0.3em;
+  }
+</style>

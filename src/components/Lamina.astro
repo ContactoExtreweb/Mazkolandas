@@ -1,0 +1,148 @@
+---
+// Lámina montada en paspartú, con anotaciones de botánico opcionales.
+// Las coordenadas de las notas van en píxeles de la imagen original:
+// (x, y) es el punto señalado, (lx, ly) donde acaba la línea, (tx, ty) la
+// esquina inferior izquierda del texto y (cx, cy, rx, ry) el óvalo que rodea
+// la parte al pasar por encima.
+interface Nota {
+  x: number
+  y: number
+  lx: number
+  ly: number
+  tx: number
+  ty: number
+  cx: number
+  cy: number
+  rx: number
+  ry: number
+  texto: string
+}
+interface Props {
+  src: string
+  alt: string
+  ancho: number
+  alto: number
+  pie?: string
+  notas?: Nota[]
+  prioridad?: boolean
+  class?: string
+}
+const { src, alt, ancho, alto, pie, notas = [], prioridad = false, class: clase = '' } = Astro.props
+---
+
+<figure class:list={['lamina', clase]} data-revelar>
+  <div class="lamina__monte">
+    <div class="lamina__img">
+      <img
+        src={src}
+        alt={alt}
+        width={ancho}
+        height={alto}
+        loading={prioridad ? 'eager' : 'lazy'}
+        fetchpriority={prioridad ? 'high' : undefined}
+      />
+      {notas.length > 0 && (
+        <svg class="lamina__notas" viewBox={`0 0 ${ancho} ${alto}`} aria-hidden="true">
+          {notas.map((n, i) => (
+            <g class="anotacion" style={`--i:${i}`}>
+              <ellipse class="anotacion__parte" cx={n.cx} cy={n.cy} rx={n.rx} ry={n.ry} pathLength="1" />
+              <line x1={n.x} y1={n.y} x2={n.lx} y2={n.ly} pathLength="1" />
+              <circle cx={n.x} cy={n.y} r="7" />
+              <text x={n.tx} y={n.ty}>{n.texto}</text>
+            </g>
+          ))}
+        </svg>
+      )}
+    </div>
+  </div>
+  {pie && <figcaption>{pie}</figcaption>}
+  {notas.length > 0 && <p class="sr">{notas.map((n) => n.texto).join(', ')}</p>}
+</figure>
+
+
+<style>
+  .lamina__notas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .anotacion line {
+    stroke: var(--tinta);
+    stroke-width: 2.4;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+  :global(.lamina.is-visible) .anotacion line {
+    animation: trazo 0.9s var(--ease) forwards;
+    animation-delay: calc(var(--i) * 0.35s + 0.3s);
+  }
+  .anotacion circle {
+    fill: var(--paspartu);
+    stroke: var(--tinta);
+    stroke-width: 1.6;
+    vector-effect: non-scaling-stroke;
+    transition: r 0.25s var(--ease), fill 0.25s;
+  }
+  .anotacion text {
+    font-family: var(--texto);
+    font-style: italic;
+    font-size: 34px;
+    fill: var(--tinta);
+    opacity: 0;
+  }
+  :global(.lamina.is-visible) .anotacion text {
+    animation: aparece 0.6s ease-out forwards;
+    animation-delay: calc(var(--i) * 0.35s + 0.8s);
+  }
+  .anotacion {
+    pointer-events: bounding-box;
+  }
+  .anotacion line,
+  .anotacion text {
+    transition: stroke 0.2s, stroke-width 0.2s, fill 0.2s;
+  }
+  .anotacion:hover circle {
+    r: 11px;
+    fill: var(--mosto);
+    stroke: var(--mosto);
+  }
+  .anotacion:hover line {
+    stroke: var(--mosto);
+    stroke-width: 4;
+  }
+  .anotacion:hover text {
+    fill: var(--mosto);
+  }
+  /* La parte señalada, rodeada como con lápiz: se traza al pasar por encima */
+  .anotacion__parte {
+    fill: none;
+    stroke: var(--mosto);
+    stroke-width: 3.5;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 0.6s var(--ease);
+  }
+  .anotacion:hover .anotacion__parte {
+    stroke-dashoffset: 0;
+  }
+  @keyframes trazo {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes aparece {
+    to {
+      opacity: 1;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .anotacion line {
+      stroke-dashoffset: 0;
+    }
+    .anotacion text {
+      opacity: 1;
+    }
+  }
+</style>

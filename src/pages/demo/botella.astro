@@ -1,0 +1,717 @@
+---
+// Demo de presentacion: botella 3D realista a pantalla completa con fondos intercambiables.
+// Usa fotos de prueba de otras marcas (CC BY-SA, Wikimedia Commons). NO se enlaza
+// desde la web, no se indexa y no debe quedarse cuando la web se publique con el
+// vino del cliente.
+import '@fontsource/libre-caslon-display/400.css'
+import '@fontsource/libre-caslon-text/400.css'
+import '@fontsource/libre-caslon-text/400-italic.css'
+import '@fontsource/courier-prime/400.css'
+import '../../styles/global.css'
+
+// Solo datos comprobables de cada botella de prueba (sin notas de cata inventadas)
+const botellas = [
+  {
+    id: 'angelus',
+    nombre: 'Angélus 2015',
+    bodega: 'Château Angélus',
+    origen: 'Saint-Émilion Grand Cru',
+    variedad: 'Merlot, Cabernet Franc',
+  },
+  {
+    id: 'cepa-gavilan',
+    nombre: 'Cepa Gavilán Crianza',
+    bodega: 'Hnos. Pérez Pascuas (Viña Pedrosa)',
+    origen: 'Ribera del Duero',
+    variedad: 'Tinta del País (Tempranillo)',
+  },
+  {
+    id: 'muestra',
+    nombre: 'Mazkolandas (muestra)',
+    bodega: 'Mazkolandas Viñedos',
+    origen: 'Cirauqui, Navarra',
+    variedad: 'Por anunciar',
+  },
+]
+
+const ambientes = [
+  { id: 'vina',    label: 'Viña',  icono: '✦' },
+  { id: 'bodega',  label: 'Bodega', icono: '◉' },
+  { id: 'cata',    label: 'Cata',  icono: '◇' },
+]
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Demo · Botella 3D · Mazkolandas</title>
+  </head>
+  <body
+    class="demo"
+    data-botellas={JSON.stringify(botellas.map(b => b.id))}
+    data-ambiente="vina"
+  >
+
+    <!-- Fondos fotograficos (se muestran segun el ambiente activo) -->
+    <div class="fondos" aria-hidden="true">
+      <div class="fondo fondo--vina"   data-fondo="vina"></div>
+      <div class="fondo fondo--bodega" data-fondo="bodega"></div>
+      <div class="fondo fondo--cata"   data-fondo="cata"></div>
+    </div>
+
+    <!-- Pantalla de carga -->
+    <div class="carga" id="carga" aria-live="polite" aria-label="Cargando botella 3D">
+      <div class="carga__logo">
+        <svg viewBox="0 0 80 80" fill="none" aria-hidden="true">
+          <circle cx="40" cy="40" r="38.5" stroke="currentColor" stroke-width="1"/>
+          <text x="40" y="34" text-anchor="middle" font-family="Courier Prime, monospace" font-size="13" letter-spacing="3" fill="currentColor">MAZKO</text>
+          <text x="40" y="49" text-anchor="middle" font-family="Courier Prime, monospace" font-size="13" letter-spacing="1.5" fill="currentColor">LANDAS</text>
+          <text x="40" y="62" text-anchor="middle" font-family="Courier Prime, monospace" font-size="8" letter-spacing="1" fill="currentColor" opacity="0.6">Viñedos</text>
+        </svg>
+      </div>
+      <p class="carga__texto">Preparando el plató…</p>
+      <div class="carga__barra" aria-hidden="true">
+        <div class="carga__progreso" id="carga-progreso"></div>
+      </div>
+    </div>
+
+    <!-- Escena 3D -->
+    <main class="escena" id="escena" aria-label="Botella de vino en 3D - arrastra para girar"></main>
+
+    <!-- Marca de agua -->
+    <div class="marca-agua" aria-hidden="true">
+      <svg viewBox="0 0 80 80" fill="none">
+        <circle cx="40" cy="40" r="38.5" stroke="currentColor" stroke-width="1"/>
+        <text x="40" y="34" text-anchor="middle" font-family="Courier Prime, monospace" font-size="13" letter-spacing="3" fill="currentColor">MAZKO</text>
+        <text x="40" y="49" text-anchor="middle" font-family="Courier Prime, monospace" font-size="13" letter-spacing="1.5" fill="currentColor">LANDAS</text>
+        <text x="40" y="62" text-anchor="middle" font-family="Courier Prime, monospace" font-size="8" letter-spacing="1" fill="currentColor" opacity="0.6">Viñedos</text>
+      </svg>
+    </div>
+
+    <!-- Panel lateral de mandos -->
+    <aside class="mandos" role="complementary" aria-label="Controles de la demo">
+
+      <!-- Cabecera -->
+      <div class="mandos__cabecera">
+        <a class="mandos__volver" href="/#vino">← Volver a la web</a>
+        <p class="nota mandos__nota">Demo · botella 3D a partir de fotos reales</p>
+      </div>
+
+      <!-- Selector de botella -->
+      <nav class="mandos__nav" role="group" aria-label="Seleccionar botella">
+        {botellas.map((b, i) => (
+          <button
+            type="button"
+            class="boton boton--demo"
+            data-botella={b.id}
+            aria-pressed={i === 0 ? 'true' : 'false'}
+            id={`btn-${b.id}`}
+          >
+            <span class="boton__num" aria-hidden="true">{i + 1}</span>
+            <span class="boton__nombre">{b.nombre}</span>
+          </button>
+        ))}
+      </nav>
+
+      <!-- Ficha del vino -->
+      <div class="ficha-vino" id="ficha-vino" aria-live="polite">
+        {botellas.map((b, i) => (
+          <dl
+            class={`ficha ficha--oscura${i === 0 ? ' ficha--activa' : ''}`}
+            data-botella-ficha={b.id}
+          >
+            <dt>Bodega</dt><dd>{b.bodega}</dd>
+            <dt>Origen</dt><dd>{b.origen}</dd>
+            <dt>Variedad</dt><dd>{b.variedad}</dd>
+          </dl>
+        ))}
+      </div>
+
+      <!-- Acciones -->
+      <div class="mandos__acciones">
+        <button type="button" class="boton boton--repetir" id="repetir" title="Repetir entrada (R)">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path d="M4 10a6 6 0 1 1 1.5 4" stroke-linecap="round"/>
+            <path d="M4 14v-4h4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Repetir entrada
+        </button>
+        <p class="mandos__ayuda nota">
+          <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> botellas &nbsp;&middot;&nbsp;
+          <kbd>V</kbd><kbd>B</kbd><kbd>C</kbd> fondos &nbsp;&middot;&nbsp;
+          <kbd>R</kbd> repite
+        </p>
+      </div>
+
+      <!-- Selector de ambiente / fondo -->
+      <div class="mandos__ambientes">
+        <p class="mandos__ambiente-label nota">Ambiente</p>
+        <div class="ambientes__fila" role="group" aria-label="Fondo escena">
+          {ambientes.map((a, i) => (
+            <button
+              type="button"
+              class="boton boton--ambiente"
+              data-ambiente={a.id}
+              aria-pressed={i === 0 ? 'true' : 'false'}
+              id={`amb-${a.id}`}
+              title={a.label}
+            >
+              <span class="ambiente__icono" aria-hidden="true">{a.icono}</span>
+              <span class="ambiente__label">{a.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- Creditos -->
+    <p class="creditos nota">
+      Fotos de las botellas: &laquo;Angélus 2015&raquo;, Somm88, y &laquo;Cepa Gavilán Crianza&raquo;, Viña Pedrosa &ndash;
+      Bodegas Hnos. Pérez Pascuas (CC BY-SA 4.0, Wikimedia Commons) &middot; Luz HDRI: Poly Haven (CC0) &middot;
+      Fondos: imágenes generadas con IA, no son la viña de Mazkolandas
+    </p>
+
+    <script>
+      import { montar } from '../../lib/botella3d.js'
+
+      const botellaIds = JSON.parse(document.body.dataset.botellas || '[]')
+      const escena     = document.getElementById('escena')
+      const cargaEl   = document.getElementById('carga')
+      const barraEl   = document.getElementById('carga-progreso')
+
+      const textos = { lugar: 'Cirauqui · Navarra', provisional: 'etiqueta provisional' }
+      const comunes = { vidrio: '#3c5530', liquido: '#3d0812', llenado: 1.95, transparencia: 0.32 }
+
+      let actual   = null
+      let cargando = false
+
+      // --- Progreso de carga ---
+      function animarProgreso(cb) {
+        let p = 0
+        const t = setInterval(() => {
+          p = Math.min(p + Math.random() * 14, 88)
+          barraEl.style.width = p + '%'
+        }, 100)
+        cb().then(() => {
+          clearInterval(t)
+          barraEl.style.width = '100%'
+          setTimeout(() => cargaEl.classList.add('carga--oculta'), 400)
+        }).catch(() => {
+          clearInterval(t)
+          cargaEl.classList.add('carga--oculta')
+        })
+      }
+
+      // --- Ficha de vino ---
+      function mostrarFicha(id) {
+        document.querySelectorAll('[data-botella-ficha]').forEach(el => {
+          el.classList.toggle('ficha--activa', el.getAttribute('data-botella-ficha') === id)
+        })
+      }
+
+      // --- Cargar botella ---
+      async function cargar(id) {
+        if (cargando) return
+        cargando = true
+        try {
+          document.querySelectorAll('[data-botella]').forEach((b) =>
+            b.setAttribute('aria-pressed', String(b.dataset.botella === id)),
+          )
+          mostrarFicha(id)
+          actual?.destruir()
+          actual = null
+          escena.innerHTML = ''
+
+          const botella =
+            id === 'muestra'
+              ? { forma: 'bordelesa', vidrio: '#3f6234', liquido: '#4a0b17', capsula: '#6b1f3a' }
+              : { ...(await (await fetch('/demo/' + id + '/botella.json')).json()), ...comunes }
+
+          actual = await montar(escena, {
+            botella,
+            textos,
+            modo: 'intro',
+            escenario: 'estudio',
+            soloVino: location.search.includes('ver=vino'),
+          })
+          window.__botella = actual // para grabar la presentación y revisar fotogramas
+          if (!actual) throw new Error('este navegador no puede mostrar 3D (WebGL).')
+          if (document.body.dataset.ambiente !== 'estudio') actual.setFondoTransparente(true)
+        } catch (e) {
+          console.warn('Demo botella:', e)
+          const p = document.createElement('p')
+          p.className = 'escena__error'
+          p.textContent = 'No se pudo cargar la botella: ' + (e.message || e)
+          escena.replaceChildren(p)
+        } finally {
+          cargando = false
+        }
+      }
+
+
+      // --- Ambientes / fondos ---
+      const fondos = { vina: '/demo/fondo-vina.jpg', bodega: '/demo/fondo-bodega.jpg', cata: '/demo/fondo-cata.jpg' }
+
+      function cambiarAmbiente(id) {
+        document.querySelectorAll('[data-ambiente]').forEach(b => {
+          b.setAttribute('aria-pressed', String(b.dataset.ambiente === id))
+        })
+        document.body.dataset.ambiente = id
+
+        const esFoto = id !== 'estudio'
+        actual?.setFondoTransparente(esFoto)
+
+        // Mostrar fondo fotografico si no es estudio
+        document.querySelectorAll('[data-fondo]').forEach(f => {
+          const activo = f.dataset.fondo === id
+          f.classList.toggle('fondo--activo', activo)
+          // Lazy-load: poner la imagen de fondo la primera vez
+          if (activo && !f.style.backgroundImage) {
+            f.style.backgroundImage = 'url(' + fondos[id] + ')'
+          }
+        })
+      }
+
+      // Init
+      mostrarFicha('angelus')
+      cambiarAmbiente('vina')
+      animarProgreso(() => cargar('angelus'))
+
+      // Botones botella
+      document.querySelectorAll('[data-botella]').forEach(b => {
+        b.onclick = () => {
+          if (b.getAttribute('aria-pressed') === 'true') { actual?.repetir(); return }
+          cargar(b.dataset.botella)
+        }
+      })
+
+      // Botones ambiente
+      document.querySelectorAll('[data-ambiente]').forEach(b => {
+        b.onclick = () => cambiarAmbiente(b.dataset.ambiente)
+      })
+
+      document.getElementById('repetir').onclick = () => actual?.repetir()
+
+      // Teclado
+      document.addEventListener('keydown', e => {
+        const n = parseInt(e.key)
+        if (!isNaN(n) && n >= 1 && n <= botellaIds.length) { cargar(botellaIds[n - 1]); return }
+        switch (e.key.toUpperCase()) {
+          case 'R': actual?.repetir(); break
+          case 'V': cambiarAmbiente('vina'); break
+          case 'B': cambiarAmbiente('bodega'); break
+          case 'C': cambiarAmbiente('cata'); break
+        }
+      })
+    </script>
+
+    <style>
+      /* ── Fondos fotograficos ─────────────────────────────────────── */
+      .fondos {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+      }
+      .fondo {
+        position: absolute;
+        inset: 0;
+        background-size: cover;
+        background-position: center;
+        opacity: 0;
+        transition: opacity 1s ease;
+      }
+      .fondo--activo {
+        opacity: 1;
+      }
+      /* Capa de oscurecimiento sobre la foto para que la botella contraste */
+      .fondo::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          to bottom,
+          rgba(8, 12, 8, 0.42) 0%,
+          rgba(8, 12, 8, 0.18) 40%,
+          rgba(8, 12, 8, 0.65) 100%
+        );
+      }
+
+      /* ── Pantalla de carga ──────────────────────────────────────── */
+      .carga {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1.5rem;
+        background: #0c110b;
+        color: var(--sobre-verde);
+        transition: opacity 0.55s, visibility 0.55s;
+      }
+      .carga--oculta {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+      .carga__logo {
+        width: 96px;
+        height: 96px;
+        color: var(--sobre-verde);
+        animation: logo-pulso 2.4s ease-in-out infinite;
+      }
+      @keyframes logo-pulso {
+        0%, 100% { opacity: 0.45; transform: scale(1); }
+        50%       { opacity: 1;    transform: scale(1.048); }
+      }
+      .carga__texto {
+        font-style: italic;
+        color: var(--sobre-verde-2);
+        font-size: 0.9rem;
+        margin: 0;
+        letter-spacing: 0.015em;
+      }
+      .carga__barra {
+        width: 160px;
+        height: 1px;
+        background: var(--verde-2);
+        position: relative;
+      }
+      .carga__progreso {
+        position: absolute;
+        inset-block: 0;
+        left: 0;
+        width: 0;
+        background: var(--oro);
+        transition: width 0.1s linear;
+      }
+
+      /* ── Base ──────────────────────────────────────────────────── */
+      .demo {
+        background: #0c110b;
+        color: var(--sobre-verde);
+        min-height: 100svh;
+        overflow: hidden;
+      }
+      /* Cuando hay fondo fotografico, el canvas 3D queda encima */
+      .demo[data-ambiente="vina"]   { --escena-bg: transparent; }
+      .demo[data-ambiente="bodega"] { --escena-bg: transparent; }
+      .demo[data-ambiente="cata"]   { --escena-bg: transparent; }
+
+      .escena {
+        position: fixed;
+        inset: 0;
+        z-index: 1;
+        cursor: grab;
+        touch-action: none;
+      }
+      .escena__error {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        margin: 0;
+        padding: var(--margen);
+        font-style: italic;
+        color: var(--sobre-verde);
+        text-align: center;
+      }
+      .escena:active { cursor: grabbing; }
+      .escena :global(canvas) {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      /* ── Marca de agua ─────────────────────────────────────────── */
+      .marca-agua {
+        position: fixed;
+        bottom: 1.75rem;
+        left: var(--margen);
+        width: 48px;
+        height: 48px;
+        color: var(--sobre-verde);
+        opacity: 0.18;
+        pointer-events: none;
+        z-index: 20;
+      }
+
+      /* ── Panel lateral ─────────────────────────────────────────── */
+      .mandos {
+        position: fixed;
+        top: 1.5rem;
+        right: var(--margen);
+        z-index: 20;
+        width: min(294px, calc(100vw - 2 * var(--margen)));
+        display: flex;
+        flex-direction: column;
+        background: rgba(8, 13, 8, 0.78);
+        border: 1px solid rgba(181, 154, 90, 0.24);
+        backdrop-filter: blur(22px) saturate(1.2);
+        -webkit-backdrop-filter: blur(22px) saturate(1.2);
+      }
+      .mandos__cabecera {
+        padding: 0.78rem 1.1rem 0.52rem;
+        border-bottom: 1px solid rgba(181, 154, 90, 0.14);
+      }
+      .mandos__volver {
+        display: inline-block;
+        margin-bottom: 0.3rem;
+        font-size: 0.85rem;
+        color: var(--sobre-verde);
+        text-decoration: none;
+      }
+      .mandos__volver:hover {
+        color: var(--oro);
+      }
+      .mandos__nota {
+        margin: 0;
+        font-size: 0.78rem;
+        color: var(--sobre-verde-2);
+      }
+
+      /* Botones de botella */
+      .mandos__nav {
+        display: flex;
+        flex-direction: column;
+        padding: 0.45rem 0;
+        border-bottom: 1px solid rgba(181, 154, 90, 0.14);
+      }
+      .boton--demo {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        padding: 0.52rem 1.1rem;
+        background: transparent;
+        border: none;
+        border-left: 2px solid transparent;
+        color: var(--sobre-verde-2);
+        font-family: var(--texto);
+        font-size: 0.88rem;
+        cursor: pointer;
+        text-align: left;
+        transition: background 0.15s, border-color 0.15s, color 0.15s;
+        width: 100%;
+        line-height: 1.3;
+      }
+      .boton--demo:hover {
+        background: rgba(181, 154, 90, 0.07);
+        color: var(--sobre-verde);
+      }
+      .boton--demo[aria-pressed='true'] {
+        border-left-color: var(--oro);
+        color: var(--sobre-verde);
+        background: rgba(181, 154, 90, 0.09);
+      }
+      .boton__num {
+        font-family: var(--insignia);
+        font-size: 0.7rem;
+        color: var(--oro);
+        min-width: 0.9rem;
+        opacity: 0.62;
+        flex-shrink: 0;
+      }
+      .boton--demo[aria-pressed='true'] .boton__num { opacity: 1; }
+
+      /* Ficha del vino */
+      .ficha-vino {
+        padding: 0.7rem 1.1rem;
+        min-height: 9rem;
+        border-bottom: 1px solid rgba(181, 154, 90, 0.14);
+      }
+      .ficha--oscura {
+        display: none;
+        grid-template-columns: auto 1fr;
+        margin: 0;
+      }
+      .ficha--activa {
+        display: grid;
+        animation: ficha-entra 0.3s var(--ease) both;
+      }
+      @keyframes ficha-entra {
+        from { opacity: 0; transform: translateY(6px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      .ficha--oscura dt,
+      .ficha--oscura dd {
+        margin: 0;
+        padding: 0.27rem 0;
+        border-bottom: 1px solid rgba(181, 154, 90, 0.09);
+        font-size: 0.8rem;
+        line-height: 1.45;
+      }
+      .ficha--oscura:last-child dt,
+      .ficha--oscura:last-child dd { border-bottom: none; }
+      .ficha--oscura dt {
+        font-style: italic;
+        color: var(--sobre-verde-2);
+        padding-right: 0.85rem;
+        white-space: nowrap;
+      }
+      .ficha--oscura dd { color: var(--sobre-verde); }
+
+
+      /* Selector de ambiente */
+      .mandos__ambientes {
+        padding: 0.6rem 1.1rem;
+        border-bottom: 1px solid rgba(181, 154, 90, 0.14);
+      }
+      .mandos__ambiente-label {
+        margin: 0 0 0.4rem;
+        font-size: 0.73rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: rgba(185, 194, 168, 0.4);
+        font-style: normal;
+      }
+      .ambientes__fila {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.35rem;
+      }
+      .boton--ambiente {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.2rem;
+        padding: 0.42rem 0.25rem;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(181, 154, 90, 0.16);
+        color: var(--sobre-verde-2);
+        font-family: var(--texto);
+        font-size: 0.7rem;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s, color 0.15s;
+        line-height: 1.2;
+      }
+      .boton--ambiente:hover {
+        background: rgba(181, 154, 90, 0.09);
+        color: var(--sobre-verde);
+        border-color: rgba(181, 154, 90, 0.3);
+      }
+      .boton--ambiente[aria-pressed='true'] {
+        border-color: var(--oro);
+        color: var(--oro);
+        background: rgba(181, 154, 90, 0.1);
+      }
+      .ambiente__icono {
+        font-size: 0.95rem;
+        line-height: 1;
+      }
+      .ambiente__label {
+        font-style: italic;
+        font-size: 0.68rem;
+      }
+
+      /* Acciones */
+      .mandos__acciones {
+        padding: 0.65rem 1.1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+      .boton--repetir {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        background: transparent;
+        border: 1px solid rgba(181, 154, 90, 0.32);
+        color: var(--sobre-verde);
+        font-family: var(--texto);
+        font-size: 0.84rem;
+        padding: 0.45rem 0.85rem;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s;
+        width: 100%;
+      }
+      .boton--repetir:hover {
+        background: rgba(181, 154, 90, 0.1);
+        border-color: var(--oro);
+      }
+      .boton--repetir svg {
+        width: 1em;
+        height: 1em;
+        flex-shrink: 0;
+        transition: transform 0.42s ease;
+      }
+      .boton--repetir:hover svg { transform: rotate(-360deg); }
+      .mandos__ayuda {
+        margin: 0;
+        font-size: 0.72rem;
+        color: rgba(185, 194, 168, 0.38);
+        text-align: center;
+        line-height: 1.65;
+        font-style: normal;
+      }
+      kbd {
+        font-family: var(--insignia);
+        font-size: 0.78em;
+        border: 1px solid rgba(185, 194, 168, 0.25);
+        padding: 0.04em 0.26em;
+      }
+
+      /* Creditos */
+      .creditos {
+        position: fixed;
+        right: var(--margen);
+        bottom: 0.85rem;
+        font-size: 0.64rem;
+        max-width: 54ch;
+        margin: 0;
+        color: rgba(185, 194, 168, 0.28);
+        line-height: 1.55;
+        z-index: 20;
+        text-align: right;
+        font-style: normal;
+      }
+
+      /* Movil */
+      @media (max-width: 560px) {
+        .mandos {
+          top: auto;
+          bottom: 0;
+          right: 0;
+          left: 0;
+          width: 100%;
+          border-left: none;
+          border-right: none;
+          border-bottom: none;
+          border-radius: 0;
+        }
+        .mandos__nav {
+          flex-direction: row;
+          overflow-x: auto;
+          scrollbar-width: none;
+          padding: 0.35rem 0;
+          border-bottom: none;
+        }
+        .boton--demo {
+          border-left: none;
+          border-top: 2px solid transparent;
+          flex-direction: column;
+          gap: 0.12rem;
+          padding: 0.4rem 0.75rem;
+          min-width: 7rem;
+          text-align: center;
+          font-size: 0.8rem;
+        }
+        .boton--demo[aria-pressed='true'] {
+          border-top-color: var(--oro);
+          border-left-color: transparent;
+        }
+        .ficha-vino { display: none; }
+        .mandos__ambientes { padding: 0.45rem 0.75rem; }
+        .ambientes__fila { gap: 0.25rem; }
+        .mandos__acciones { padding: 0.5rem 0.75rem; }
+        .marca-agua, .creditos { display: none; }
+      }
+    </style>
+  </body>
+</html>

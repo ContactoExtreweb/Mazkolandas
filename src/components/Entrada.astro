@@ -1,0 +1,174 @@
+---
+// Una entrada del cuaderno. Si no existe (o no está en euskera), 404 real.
+import Base from '../layouts/Base.astro'
+import Flecha from './Flecha.astro'
+import { T, RUTAS, FASES } from '../i18n.js'
+import { aHTML, fecha, resumen } from '../lib/texto.js'
+
+interface Props {
+  lang: 'es' | 'eu'
+  post: any | null
+}
+const { lang, post } = Astro.props
+const t = T[lang]
+const r = RUTAS[lang]
+const otroLang = lang === 'es' ? 'eu' : 'es'
+
+const SITE = Astro.site ?? new URL('https://mazkolandas.es')
+const ruta = post ? `${r.cuaderno}${post.slug}` : ''
+// La versión en el otro idioma: en castellano siempre existe; en euskera, solo si hay título_eu
+const otra = post && (lang === 'eu' || post.tieneEu) ? `${RUTAS[otroLang].cuaderno}${post.slug}` : null
+const [portada, ...galeria] = post?.fotos ?? []
+
+const schema = post && {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.titulo,
+  description: resumen(post.extracto || post.contenido),
+  datePublished: post.fecha,
+  dateModified: post.updatedAt,
+  inLanguage: lang,
+  mainEntityOfPage: new URL(ruta, SITE).href,
+  image: portada ? [portada.url] : undefined,
+  author: post.autor ? { '@type': 'Person', name: post.autor } : { '@type': 'Organization', name: 'Mazkolandas Viñedos' },
+  publisher: { '@id': new URL('/#bodega', SITE).href },
+}
+---
+
+{post ? (
+  <Base
+    title={`${post.titulo} | Mazkolandas`}
+    description={resumen(post.extracto || post.contenido)}
+    lang={lang}
+    otra={otra}
+    ruta={ruta}
+    image={portada?.url}
+    type="article"
+    schema={schema}
+  >
+    <article>
+      <header class="verde entrada__cabeza">
+        <div class="marco">
+          <h1>{post.titulo}</h1>
+          <p class="nota entrada__meta">
+            <span>{t.entrada} nº {post.numero}</span>
+            <time datetime={post.fecha}>{fecha(post.fecha)}</time>
+            {post.fase && <span>{FASES[lang][post.fase]}</span>}
+            {post.autor && <span>{`${t.firma} ${post.autor}`}</span>}
+          </p>
+          {post.extracto && <p class="entrada__extracto">{post.extracto}</p>}
+        </div>
+      </header>
+
+      <div class="marco entrada">
+        {portada && (
+          <figure class="lamina entrada__portada">
+            <div class="lamina__monte">
+              <div class="lamina__img">
+                <img src={portada.url} alt={portada.pie || post.titulo} width="1400" height="933" fetchpriority="high" />
+              </div>
+            </div>
+            {portada.pie && <figcaption>{portada.pie}</figcaption>}
+          </figure>
+        )}
+
+        <div class="entrada__cuerpo">
+          <div class="prosa" set:html={aHTML(post.contenido)} />
+
+          {galeria.length > 0 && (
+            <div class="entrada__galeria">
+              {galeria.map((f) => (
+                <figure class="lamina">
+                  <div class="lamina__monte">
+                    <div class="lamina__img">
+                      <img src={f.url} alt={f.pie || post.titulo} loading="lazy" width="1400" height="933" />
+                    </div>
+                  </div>
+                  {f.pie && <figcaption>{f.pie}</figcaption>}
+                </figure>
+              ))}
+            </div>
+          )}
+
+          <footer class="entrada__pie">
+            {post.autor && <p class="entrada__firma">{post.autor}</p>}
+            <div class="acciones">
+              <a class="boton boton--linea" href={r.cuaderno}>{t.volver}<Flecha /></a>
+              {otra && (
+                <a class="nota" href={otra} hreflang={otroLang} lang={otroLang}>{t.enEuskera}</a>
+              )}
+            </div>
+          </footer>
+        </div>
+      </div>
+    </article>
+  </Base>
+) : (
+  <Base title="404 | Mazkolandas" description={t.noEncontrada} lang={lang} noindex>
+    <section class="verde entrada__cabeza">
+      <div class="marco">
+        <h1>{t.noEncontrada}</h1>
+        <p class="nota entrada__meta">404</p>
+        <p style="margin-top:2rem"><a class="boton boton--linea" href={r.cuaderno}>{t.volver}<Flecha /></a></p>
+      </div>
+    </section>
+  </Base>
+)}
+
+<style>
+  .entrada__cabeza {
+    padding-block: calc(var(--linea) * 2) calc(var(--linea) * 3);
+  }
+  .entrada__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem 1.25rem;
+    margin: var(--linea) 0 0;
+  }
+  .entrada__cabeza h1 {
+    font-size: clamp(2.1rem, 3.4vw + 0.9rem, 4.25rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    max-width: 22ch;
+    color: var(--paspartu);
+  }
+  .entrada__extracto {
+    font-size: 1.25rem;
+    line-height: 1.55;
+    margin: var(--linea) 0 0;
+    max-width: 48ch;
+  }
+  .entrada {
+    padding-top: calc(var(--linea) * 3);
+  }
+  .entrada__portada {
+    max-width: 58rem;
+    margin-bottom: calc(var(--linea) * 3);
+  }
+  .entrada__cuerpo {
+    max-width: 66ch;
+    margin-inline: auto;
+    font-size: 1.125rem;
+  }
+  .entrada__galeria {
+    display: grid;
+    gap: calc(var(--linea) * 2);
+    margin-block: calc(var(--linea) * 2.5);
+  }
+  .entrada__pie {
+    margin-top: calc(var(--linea) * 3);
+    padding-top: calc(var(--linea) * 1.5);
+    border-top: 1px solid var(--tinta);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--linea) 2rem;
+  }
+  .entrada__firma {
+    font-style: italic;
+    font-size: 1.25rem;
+    color: var(--mosto);
+    margin: 0;
+  }
+</style>

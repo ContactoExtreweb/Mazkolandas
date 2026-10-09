@@ -1,0 +1,97 @@
+---
+// Listado del cuaderno de campo (blog) en castellano o euskera.
+import Base from '../layouts/Base.astro'
+import Registro from './Registro.astro'
+import Ciclo from './Ciclo.astro'
+import { T, RUTAS } from '../i18n.js'
+
+interface Props {
+  lang: 'es' | 'eu'
+  posts: any[]
+}
+const { lang, posts } = Astro.props
+const t = T[lang]
+
+const C = {
+  es: {
+    title: 'Cuaderno de campo: noticias de la viña y el vino en Navarra | Mazkolandas',
+    description:
+      'Noticias de nuestros viñedos en Cirauqui (Navarra): poda, envero, vendimia y bodega, contadas por Nerea, Julen e Iñaki mientras pasan.',
+    h1: 'Cuaderno de campo',
+    entrada:
+      'Lo que pasa en nuestra viña de Cirauqui, apuntado mientras pasa: la poda, el envero, la vendimia, la bodega y la gente con la que nos cruzamos por Navarra.',
+    fasesTitulo: 'El ciclo que documentamos',
+    fasesTexto: 'A lo largo del año iremos publicando entradas de cada etapa del cultivo de la vid. Las fechas son orientativas de la zona media de Navarra; la aguja marca el día de hoy.',
+  },
+  eu: {
+    title: 'Landa-koadernoa: mahastiko eta ardoko berriak Nafarroan | Mazkolandas',
+    description:
+      'Ziraukiko gure mahastietako berriak (Nafarroa): inausketa, koloreztatzea, mahats-bilketa eta upategia, Nerea, Julen eta Iñakik kontatuak.',
+    h1: 'Landa-koadernoa',
+    entrada:
+      'Ziraukiko gure mahastian gertatzen dena, gertatu ahala idatzia: inausketa, koloreztatzea, mahats-bilketa, upategia eta Nafarroan topatzen dugun jendea.',
+    fasesTitulo: 'Dokumentatzen dugun zikloa',
+    fasesTexto: 'Urtean zehar mahatsondoaren laborantzako etapa bakoitzeko sarrerak argitaratuko ditugu. Datak Nafarroa erdialdeko gutxi gorabeherakoak dira; orratzak gaurko eguna markatzen du.',
+  },
+}[lang]
+---
+
+<Base title={C.title} description={C.description} lang={lang} otra={RUTAS[lang === 'es' ? 'eu' : 'es'].cuaderno}>
+  <header class="verde libro__cabeza">
+    <div class="marco">
+      <h1>{C.h1}</h1>
+      <p>{C.entrada}</p>
+    </div>
+  </header>
+  <section class="marco libro">
+    {posts.length ? (
+      <Registro posts={posts} lang={lang} />
+    ) : (
+      <p class="nota libro__vacio">{t.sinEntradas}</p>
+    )}
+  </section>
+
+  <section class="marco libro__explicacion">
+    <h2>{C.fasesTitulo}</h2>
+    <p>{C.fasesTexto}</p>
+    <Ciclo lang={lang} />
+  </section>
+</Base>
+
+<style>
+  .libro__cabeza {
+    padding-block: calc(var(--linea) * 2) calc(var(--linea) * 3);
+  }
+  .libro__cabeza h1 {
+    font-size: clamp(2.6rem, 5vw + 0.6rem, 5.5rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--paspartu);
+    margin-bottom: var(--linea);
+  }
+  .libro__cabeza p {
+    font-size: 1.1875rem;
+    max-width: 50ch;
+    margin: 0;
+  }
+  .libro {
+    padding-top: calc(var(--linea) * 3);
+  }
+  .libro__vacio {
+    padding: calc(var(--linea) * 1.5) 0;
+    border-block: 1px solid var(--filete);
+  }
+  .libro__explicacion {
+    padding-top: calc(var(--linea) * 4);
+    padding-bottom: calc(var(--linea) * 4);
+  }
+  .libro__explicacion h2 {
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    margin-bottom: 1rem;
+  }
+  .libro__explicacion p {
+    font-size: 1.125rem;
+    max-width: 60ch;
+    margin-bottom: 2.5rem;
+  }
+</style>

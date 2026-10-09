@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /demo
+
+Sitemap: https://mazkolandas.es/sitemap.xml
